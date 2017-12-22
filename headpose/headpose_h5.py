@@ -88,83 +88,100 @@ def save_h5_file_list(data_h5, label_h5, suffix, train_file_idx):
     for h5f in h5_file_list:
         h5f.close()
 
-#datapath = "/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP"
-datapath = "D:/sandbox/images/300W-LP/300W_LP"
-file_list = []
 
-for(dirpath, dirnames, filenames) in walk(datapath):
-    for f in filenames:
-        if f.endswith(".jpg"):
-            file_list.append(dirpath + "/" + f)
-print(len(file_list))
+def read_sample_list(datapath, bins):
+    file_list = []
 
-#file_list2 = glob.glob("/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP/**/*.jpg", recursive=True)
-#print(len(file_list2))
+    for(dirpath, dirnames, filenames) in walk(datapath):
+        for f in filenames:
+            if f.endswith(".jpg"):
+                file_list.append(dirpath + "/" + f)
+    print(len(file_list))
 
+    #file_list2 = glob.glob("/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP/**/*.jpg", recursive=True)
+    #print(len(file_list2))
+
+    sample_list = []
+    sample_number = 1
+    file_idx = 0
+    for filepath in file_list:  
+        #print(file_idx, len(file_list))
+        sys.stdout.write("Reading mat: %d   \r" % (file_idx) )
+        sys.stdout.flush()
+        file_idx+=1
+        src = cv2.imread(filepath)
+        #print(src.shape)
+        if src.shape[0] == 0 or src.shape[1] == 0:
+            print("Error in reading image", filepath)
+        mat_path = filepath[:-3] + "mat"
+        #pt2d = get_pt2d_from_mat(mat_path)
+        #pose = get_ypr_from_mat(mat_path) # We get the pose in radians
+        pose, pt2d = read_mat(mat_path)
+        #print(pose)
+        for i in range(0,3):
+            pose[i] = pose[i] * 180 / np.pi
+        pitch = pose[0]
+        yaw = pose[1]
+        roll = pose[2]
+        # Bin values    
+        binned_pose = np.digitize([yaw, pitch, roll], bins) - 1  
+        for i in range(sample_number):  
+            sample = TrainSample()
+            sample.img_path = filepath        
+            sample.face_pts = pt2d        
+            
+            sample.pitch = pose[0]
+            sample.yaw = pose[1]
+            sample.roll = pose[2]
+              
+            sample.yaw_bin = binned_pose[0]
+            sample.pitch_bin = binned_pose[1]
+            sample.roll_bin = binned_pose[2]
+            
+            sample.flip = np.random.random_sample() < 0.5
+            sample.blur = np.random.random_sample() < 0.05
+            sample.trans = np.random.random_sample()
+            sample.alpha = 1.0 + 0.1 * np.random.random_sample() - 0.05
+            sample.beta = 10 * np.random.random_sample()
+
+            k =  sample.trans * 0.2 + 0.2
+            x_min = min(pt2d[0,:])
+            y_min = min(pt2d[1,:])
+            x_max = max(pt2d[0,:])
+            y_max = max(pt2d[1,:])
+            x_min -= int(0.6 * k * abs(x_max - x_min))
+            y_min -= int(2 * k * abs(y_max - y_min))
+            x_max += int(0.6 * k * abs(x_max - x_min))
+            y_max += int(0.6 * k * abs(y_max - y_min))
+            x_min = int(max(round(x_min),0))
+            y_min = int(max(round(y_min),0))
+            x_max = int(min(round(x_max),src.shape[1]-1))
+            y_max = int(min(round(y_max),src.shape[0]-1))
+            
+            sample.box=[x_min,x_max,y_min,y_max]
+            sample_list.append(sample)
+            #break
+        #break
+    return sample_list
+
+sample_list_file = "sample_list.npz"
+sample_list=[]
 bins = np.array(range(-99, 102, 3))
 print(bins, len(bins))
-
-sample_list = []
-sample_number = 1
-file_idx = 0
-for filepath in file_list:  
-    #print(file_idx, len(file_list))
-    sys.stdout.write("Reading mat: %d   \r" % (file_idx) )
-    sys.stdout.flush()
-    file_idx+=1
-    src = cv2.imread(filepath)
-    #print(src.shape)
-    if src.shape[0] == 0 or src.shape[1] == 0:
-        print("Error in reading image", filepath)
-    mat_path = filepath[:-3] + "mat"
-    #pt2d = get_pt2d_from_mat(mat_path)
-    #pose = get_ypr_from_mat(mat_path) # We get the pose in radians
-    pose, pt2d = read_mat(mat_path)
-    for i in range(0,3):
-        pose[i] = pose[i] * 180 / np.pi
-    pitch = pose[0]
-    yaw = pose[1]
-    roll = pose[2]
-    # Bin values    
-    binned_pose = np.digitize([yaw, pitch, roll], bins) - 1  
-    for i in range(sample_number):  
-        sample = TrainSample()
-        sample.img_path = filepath        
-        sample.face_pts = pt2d        
-        
-        sample.pitch = pose[0]
-        sample.yaw = pose[1]
-        sample.roll = pose[2]
-          
-        sample.yaw_bin = binned_pose[0]
-        sample.pitch_bin = binned_pose[1]
-        sample.roll_bin = binned_pose[2]
-        
-        sample.flip = np.random.random_sample() < 0.5
-        sample.blur = np.random.random_sample() < 0.05
-        sample.trans = np.random.random_sample()
-        sample.alpha = 1.0 + 0.1 * np.random.random_sample() - 0.05
-        sample.beta = 10 * np.random.random_sample()
-
-        k =  sample.trans * 0.2 + 0.2
-        x_min = min(pt2d[0,:])
-        y_min = min(pt2d[1,:])
-        x_max = max(pt2d[0,:])
-        y_max = max(pt2d[1,:])
-        x_min -= int(0.6 * k * abs(x_max - x_min))
-        y_min -= int(2 * k * abs(y_max - y_min))
-        x_max += int(0.6 * k * abs(x_max - x_min))
-        y_max += int(0.6 * k * abs(y_max - y_min))
-        x_min = int(max(round(x_min),0))
-        y_min = int(max(round(y_min),0))
-        x_max = int(min(round(x_max),src.shape[1]-1))
-        y_max = int(min(round(y_max),src.shape[0]-1))
-        
-        sample.box=[x_min,x_max,y_min,y_max]
-        sample_list.append(sample)
-        #break
-    #break
+if not os.path.exists(sample_list_file):
+    #datapath = "/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP"
+    datapath = "D:/sandbox/images/300W-LP/300W_LP"
+    print("Create samples", datapath)
+    sample_list = read_sample_list(datapath, bins)
+    np.savez(sample_list_file,sample_list=sample_list)
+else:
+    print("Load samples ", sample_list_file)
+    data = np.load(sample_list_file)    
+    sample_list = data["sample_list"]
 np.random.shuffle(sample_list)
+#for s in sample_list:
+#    print(s.yaw, s.pitch, s.roll)
+#print(train_data)
 print("Sample list size: ", len(sample_list))
 
 file_idx = 0
