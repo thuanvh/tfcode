@@ -34,6 +34,14 @@ def get_pt2d_from_mat(mat_path):
     pt2d = mat['pt2d']
     return pt2d
 
+def read_mat(mat_path):
+    mat = sio.loadmat(mat_path)
+    pre_pose_params = mat['Pose_Para'][0]
+    # Get [pitch, yaw, roll]
+    pose_params = pre_pose_params[:3]
+    pt2d = mat['pt2d']
+    return pose_params,pt2d
+
 class TrainSample:
     img_path = ""
     yaw = 0.0
@@ -46,6 +54,8 @@ class TrainSample:
     blur = False
     flip = False
     trans = 0.0
+    alpha = 1.0
+    beta = 0
     box=[]#xmin,xmax,ymin,ymax
 
 def create_h5_file(folder,train_file_idx, sample_per_file, channel, height, width):
@@ -85,7 +95,7 @@ bins = np.array(range(-99, 102, 3))
 print(bins, len(bins))
 
 sample_list = []
-sample_number = 10
+sample_number = 1
 file_idx = 0
 for filepath in file_list:  
     #print(file_idx, len(file_list))
@@ -97,8 +107,9 @@ for filepath in file_list:
     if src.shape[0] == 0 or src.shape[1] == 0:
         print("Error in reading image", filepath)
     mat_path = filepath[:-3] + "mat"
-    pt2d = get_pt2d_from_mat(mat_path)
-    pose = get_ypr_from_mat(mat_path) # We get the pose in radians
+    #pt2d = get_pt2d_from_mat(mat_path)
+    #pose = get_ypr_from_mat(mat_path) # We get the pose in radians
+    pose, pt2d = read_mat(mat_path)
     for i in range(0,3):
         pose[i] = pose[i] * 180 / np.pi
     pitch = pose[0]
@@ -122,7 +133,9 @@ for filepath in file_list:
         sample.flip = np.random.random_sample() < 0.5
         sample.blur = np.random.random_sample() < 0.05
         sample.trans = np.random.random_sample()
-        
+        sample.alpha = 1.0 + 0.1 * np.random.random_sample() - 0.05
+        sample.beta = 10 * np.random.random_sample()
+
         k =  sample.trans * 0.2 + 0.2
         x_min = min(pt2d[0,:])
         y_min = min(pt2d[1,:])
@@ -141,7 +154,7 @@ for filepath in file_list:
         sample_list.append(sample)
         #break
     #break
-#np.random.shuffle(sample_list)
+np.random.shuffle(sample_list)
 print("Sample list size: ", len(sample_list))
 
 file_idx = 0
@@ -182,8 +195,10 @@ for sample in sample_list:
     if sample.blur:
         img = cv2.blur(img, (3,3))
         #cv2.imwrite(prefix + "_blur.jpg", img)    
-    
-    cv2.imwrite(prefix + ".jpg", img)
+    img *= alpha
+    img += beta
+
+    #cv2.imwrite(prefix + ".jpg", img)
     # write to h5
     if file_idx % sample_per_file == 0 :        
         if len(h5_file_list) > 0 :
