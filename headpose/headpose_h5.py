@@ -60,6 +60,7 @@ class TrainSample:
 
 def create_h5_file(folder,train_file_idx, sample_per_file, channel, height, width):
     h5file = h5py.File(folder + "/train" + str(train_file_idx) + ".h5", "w")
+    #print(folder,train_file_idx, sample_per_file, channel, height, width)
     h5file.create_dataset("data", (sample_per_file, channel, height, width), dtype='f4')
     h5file.create_dataset("label", (sample_per_file, 1), dtype='f4')
     return h5file
@@ -75,7 +76,15 @@ def add_sample(data_idx, data, label_list, h5_file_list):
         h5_file_list[i]['data'][data_idx] = data
         h5_file_list[i]['label'][data_idx] = label_list[i]
 
-def save_h5_file_list(h5_file_list):
+def save_h5_file_list(data_h5, label_h5, suffix, train_file_idx):
+    sample_per_file = len(data_h5)
+    #print(sample_per_file, data_h5[0].shape)
+    channel = data_h5[0].shape[1]
+    height = data_h5[0].shape[2]
+    width = data_h5[0].shape[3]
+    h5_file_list = create_h5_file_list(suffix, train_file_idx, sample_per_file, channel, height, width)
+    for i in range(sample_per_file):
+        add_sample(i, data_h5[i], label_h5[i], h5_file_list)
     for h5f in h5_file_list:
         h5f.close()
 
@@ -160,8 +169,8 @@ print("Sample list size: ", len(sample_list))
 file_idx = 0
 sample_per_file = 1000
 train_file_idx = 0
-h5_file_list=[]
-output_folder = "output/"
+
+output_folder = "/media/sf_D_DRIVE/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_100_6/"
 h5_name = ["yaw_cont", "pitch_cont", "roll_cont", "yaw_bin", "pitch_bin", "roll_bin"]
 for i in range(len(h5_name)):
     h5_name[i] = output_folder + h5_name[i]    
@@ -172,6 +181,8 @@ if not os.path.exists(output_folder + "images/"):
 height = 100
 width = 100
 channel = 3
+data_h5=[]
+label_h5=[]
 for sample in sample_list:
     prefix = output_folder+"images/"+str(file_idx)
     sys.stdout.write("Reading sample: %d   \r" % (file_idx) )
@@ -195,31 +206,30 @@ for sample in sample_list:
     if sample.blur:
         img = cv2.blur(img, (3,3))
         #cv2.imwrite(prefix + "_blur.jpg", img)    
-    img *= alpha
-    img += beta
-
-    #cv2.imwrite(prefix + ".jpg", img)
+    img = cv2.add(cv2.multiply(img, np.array([sample.alpha])), np.array([sample.beta]))
+    
+    cv2.imwrite(prefix + ".jpg", img)
     # write to h5
     if file_idx % sample_per_file == 0 :        
-        if len(h5_file_list) > 0 :
+        if len(data_h5) > 0 :
             print("Save h5 file ", train_file_idx)
-            save_h5_file_list(h5_file_list)            
-        h5_file_list = create_h5_file_list(h5_name, train_file_idx, sample_per_file, channel, height, width)
-        train_file_idx += 1
+            save_h5_file_list(data_h5, label_h5, h5_name, train_file_idx)
+            train_file_idx += 1
 
     img = cv2.resize(img, (width, height)).astype(np.float32)
     img *= 2/255.0
     img -= 1
     b, g, r = cv2.split(img)
     data = [b, g, r]
-    np.reshape(data,(1,channel, height, width))
+    data = np.reshape(data,(1,channel, height, width))
     label_list = [sample.yaw, sample.pitch, sample.roll, sample.yaw_bin, sample.pitch_bin, sample.roll_bin]
-    add_sample(file_idx % sample_per_file, data, label_list, h5_file_list)
-
+    #add_sample(file_idx % sample_per_file, data, label_list, h5_file_list)
+    data_h5.append(data)
+    label_h5.append(label_list)
     file_idx += 1
 
-if len(h5_file_list) > 0 :
-    save_h5_file_list(h5_file_list)            
+if len(data_h5) > 0 :
+    save_h5_file_list(data_h5, label_h5, h5_name, train_file_idx)            
 
 
 
