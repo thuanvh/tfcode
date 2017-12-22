@@ -1,5 +1,5 @@
 import cv2
-import dlib
+#import dlib
 import h5py
 import glob
 from os import walk
@@ -88,7 +88,8 @@ def save_h5_file_list(data_h5, label_h5, suffix, train_file_idx):
     for h5f in h5_file_list:
         h5f.close()
 
-datapath = "/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP"
+#datapath = "/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP"
+datapath = "D:/sandbox/images/300W-LP/300W_LP"
 file_list = []
 
 for(dirpath, dirnames, filenames) in walk(datapath):
@@ -170,7 +171,8 @@ file_idx = 0
 sample_per_file = 1000
 train_file_idx = 0
 
-output_folder = "/media/sf_D_DRIVE/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_100_6/"
+#output_folder = "/media/sf_D_DRIVE/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_100_6/"
+output_folder = "D:/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_100_6/"
 h5_name = ["yaw_cont", "pitch_cont", "roll_cont", "yaw_bin", "pitch_bin", "roll_bin"]
 for i in range(len(h5_name)):
     h5_name[i] = output_folder + h5_name[i]    
@@ -214,6 +216,8 @@ for sample in sample_list:
         if len(data_h5) > 0 :
             print("Save h5 file ", train_file_idx)
             save_h5_file_list(data_h5, label_h5, h5_name, train_file_idx)
+            data_h5=[]
+            label_h5=[]
             train_file_idx += 1
 
     img = cv2.resize(img, (width, height)).astype(np.float32)
