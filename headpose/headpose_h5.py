@@ -8,6 +8,9 @@ import scipy.io as sio
 import numpy as np
 import os
 import sys
+#import thread
+import threading
+
 def get_pose_params_from_mat(mat_path):
     # This functions gets the pose parameters from the .mat
     # Annotations that come with the Pose_300W_LP dataset.
@@ -77,6 +80,7 @@ def add_sample(data_idx, data, label_list, h5_file_list):
         h5_file_list[i]['label'][data_idx] = label_list[i]
 
 def save_h5_file_list(data_h5, label_h5, suffix, train_file_idx):
+    print("Save h5 file ", train_file_idx)
     sample_per_file = len(data_h5)
     #print(sample_per_file, data_h5[0].shape)
     channel = data_h5[0].shape[1]
@@ -184,73 +188,116 @@ np.random.shuffle(sample_list)
 #print(train_data)
 print("Sample list size: ", len(sample_list))
 
-file_idx = 0
-sample_per_file = 1000
-train_file_idx = 0
+#file_idx = 0
 
 #output_folder = "/media/sf_D_DRIVE/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_100_6/"
-output_folder = "D:/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_100_6/"
-h5_name = ["yaw_cont", "pitch_cont", "roll_cont", "yaw_bin", "pitch_bin", "roll_bin"]
+inputsize = 40
+height = inputsize #100
+width = inputsize #100
+output_folder = "D:/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_" + str(inputsize) + "/"
+h5_name = ["yaw_cont", "pitch_cont", "roll_cont"]#, "yaw_bin", "pitch_bin", "roll_bin"]
 for i in range(len(h5_name)):
     h5_name[i] = output_folder + h5_name[i]    
     if not os.path.exists(h5_name[i]):
         os.makedirs(h5_name[i])
 if not os.path.exists(output_folder + "images/"):
     os.makedirs(output_folder + "images/")
-height = 100
-width = 100
-channel = 3
-data_h5=[]
-label_h5=[]
-for sample in sample_list:
-    prefix = output_folder+"images/"+str(file_idx)
-    sys.stdout.write("Reading sample: %d   \r" % (file_idx) )
-    sys.stdout.flush()
-    src = cv2.imread(sample.img_path)
+status_dict={}
+def print_status(name, idx):
+    status_dict[name] = idx
+    sys.stdout.write("Reading sample: ")
+    #for i in status_dict.keys:
+    #    print(status_dict[i])
+    #print(status_dict)
+    #print(name, status_dict[name])
+    for name1 in status_dict.keys():
+        sys.stdout.write("%s:%d   " % (name1,status_dict[name1]) )
+    sys.stdout.write("\r")
+    #sys.stdout.flush()
 
-    pt2d = sample.face_pts
+def sample_gen(rangename,start_idx, end_idx):
+    channel = 3
+    data_h5=[]
+    label_h5=[]
+    train_file_idx = 0
+    sample_per_file = 1000
+    for cur_idx in range(start_idx, end_idx):
+        file_idx = cur_idx
+        sample = sample_list[cur_idx]
+        prefix = output_folder+"images/"+str(file_idx)
+        print_status(rangename, cur_idx)
+        src = cv2.imread(sample.img_path)
 
-    img = src[sample.box[2]:sample.box[3], sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
-    
-    if sample.flip:
-        #print(sample.pitch, sample.yaw, sample.roll, sample.pitch_bin, sample.yaw_bin, sample.roll_bin)
-        sample.yaw = -sample.yaw
-        sample.roll = -sample.roll
-        sample.yaw_bin = len(bins)-1-sample.yaw_bin
-        sample.roll_bin = len(bins)-1-sample.roll_bin
-        img = cv2.flip(img,1)
-        #cv2.imwrite(prefix + "_flip.jpg", img)
-        #print(sample.pitch, sample.yaw, sample.roll, sample.pitch_bin, sample.yaw_bin, sample.roll_bin)
+        pt2d = sample.face_pts
 
-    if sample.blur:
-        img = cv2.blur(img, (3,3))
-        #cv2.imwrite(prefix + "_blur.jpg", img)    
-    img = cv2.add(cv2.multiply(img, np.array([sample.alpha])), np.array([sample.beta]))
-    
-    cv2.imwrite(prefix + ".jpg", img)
-    # write to h5
-    if file_idx % sample_per_file == 0 :        
-        if len(data_h5) > 0 :
-            print("Save h5 file ", train_file_idx)
-            save_h5_file_list(data_h5, label_h5, h5_name, train_file_idx)
-            data_h5=[]
-            label_h5=[]
-            train_file_idx += 1
+        img = src[sample.box[2]:sample.box[3], sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+        
+        if sample.flip:
+            #print(sample.pitch, sample.yaw, sample.roll, sample.pitch_bin, sample.yaw_bin, sample.roll_bin)
+            sample.yaw = -sample.yaw
+            sample.roll = -sample.roll
+            sample.yaw_bin = len(bins)-1-sample.yaw_bin
+            sample.roll_bin = len(bins)-1-sample.roll_bin
+            img = cv2.flip(img,1)
+            #cv2.imwrite(prefix + "_flip.jpg", img)
+            #print(sample.pitch, sample.yaw, sample.roll, sample.pitch_bin, sample.yaw_bin, sample.roll_bin)
 
-    img = cv2.resize(img, (width, height)).astype(np.float32)
-    img *= 2/255.0
-    img -= 1
-    b, g, r = cv2.split(img)
-    data = [b, g, r]
-    data = np.reshape(data,(1,channel, height, width))
-    label_list = [sample.yaw, sample.pitch, sample.roll, sample.yaw_bin, sample.pitch_bin, sample.roll_bin]
-    #add_sample(file_idx % sample_per_file, data, label_list, h5_file_list)
-    data_h5.append(data)
-    label_h5.append(label_list)
-    file_idx += 1
+        if sample.blur:
+            img = cv2.blur(img, (3,3))
+            #cv2.imwrite(prefix + "_blur.jpg", img)    
+        img = cv2.add(cv2.multiply(img, np.array([sample.alpha])), np.array([sample.beta]))
+        
+        #cv2.imwrite(prefix + ".jpg", img)
+        # write to h5
+        if len(label_h5) % sample_per_file == 0 :        
+            if len(data_h5) > 0 :
+                save_h5_file_list(data_h5, label_h5, h5_name, rangename + str(int(cur_idx/sample_per_file)))
+                data_h5=[]
+                label_h5=[]                
 
-if len(data_h5) > 0 :
-    save_h5_file_list(data_h5, label_h5, h5_name, train_file_idx)            
+        img = cv2.resize(img, (width, height)).astype(np.float32)
+        img *= 2/255.0
+        img -= 1
+        #cv2.imwrite(prefix + "_norm.jpg",img)
+        b, g, r = cv2.split(img)
+        data = [b, g, r]
+        data = np.reshape(data,(1,channel, height, width))
+        label_list = [sample.yaw, sample.pitch, sample.roll]#, sample.yaw_bin, sample.pitch_bin, sample.roll_bin]
+        #add_sample(file_idx % sample_per_file, data, label_list, h5_file_list)
+        data_h5.append(data)
+        label_h5.append(label_list)
+        file_idx += 1
 
+    if len(data_h5) > 0 :
+        save_h5_file_list(data_h5, label_h5, h5_name, rangename + str(int(cur_idx/sample_per_file)) + "end")            
+
+class myThread(threading.Thread):
+    def __init__(self, threadID, name, startIdx, endIdx):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.startIdx = startIdx
+        self.endIdx = endIdx
+        self.name = name
+    def run(self):
+        print("starting", self.name, self.startIdx, self.endIdx)
+        sample_gen(self.name, self.startIdx, self.endIdx)
+        print("exiting", self.name)
+#try:
+#    thread.start_new_thread(sample_gen, (0, 2000))
+#    thread.start_new_thread(sample_gen, (2001, 3000))
+#except:
+#    print("Error in start thread")
+
+#sample_gen("t1",0, 100)
+#thread1 = myThread(1,"a",0,100)
+#thread2 = myThread(2,"b",1000, 1100)
+#thread1.start()
+#thread2.start()
+
+thread_num = 8
+data_size=int(len(sample_list)/thread_num)
+for tid in range(thread_num):
+    t = myThread(tid,"a"+str(tid), data_size * tid, data_size * (tid+1))
+    t.start()
 
 
