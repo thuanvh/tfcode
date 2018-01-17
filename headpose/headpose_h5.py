@@ -106,7 +106,7 @@ def read_sample_list(datapath, bins):
     #print(len(file_list2))
 
     sample_list = []
-    sample_number = 1
+    sample_number = 6
     file_idx = 0
     for filepath in file_list:  
         #print(file_idx, len(file_list))
@@ -229,8 +229,14 @@ def sample_gen(rangename,start_idx, end_idx):
         src = cv2.imread(sample.img_path)
 
         pt2d = sample.face_pts
-
-        img = src[sample.box[2]:sample.box[3], sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+        box_w = sample.box[1] - sample.box[0]
+        box_h = sample.box[3] - sample.box[2]
+        dx = (box_h-box_w)/2
+        startx = max(int(sample.box[0]-dx),0)
+        endx = min(int(sample.box[1]+dx), src.shape[1]-1)
+        #img = src[startx:endx, sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+        #img = src[sample.box[2]:sample.box[3], sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+        img = src[sample.box[2]:sample.box[3], startx:endx]#(int(x_min), int(y_min), int(x_max), int(y_max)))
         
         if sample.flip:
             #print(sample.pitch, sample.yaw, sample.roll, sample.pitch_bin, sample.yaw_bin, sample.roll_bin)
@@ -248,17 +254,13 @@ def sample_gen(rangename,start_idx, end_idx):
         img = cv2.add(cv2.multiply(img, np.array([sample.alpha])), np.array([sample.beta]))
         
         #cv2.imwrite(prefix + ".jpg", img)
-        # write to h5
-        if len(label_h5) % sample_per_file == 0 :        
-            if len(data_h5) > 0 :
-                save_h5_file_list(data_h5, label_h5, h5_name, rangename + str(int(cur_idx/sample_per_file)))
-                data_h5=[]
-                label_h5=[]                
+                
 
         img = cv2.resize(img, (width, height)).astype(np.float32)
         img *= 2/255.0
         img -= 1
         #cv2.imwrite(prefix + "_norm.jpg",img)
+
         b, g, r = cv2.split(img)
         data = [b, g, r]
         data = np.reshape(data,(1,channel, height, width))
@@ -266,10 +268,16 @@ def sample_gen(rangename,start_idx, end_idx):
         #add_sample(file_idx % sample_per_file, data, label_list, h5_file_list)
         data_h5.append(data)
         label_h5.append(label_list)
-        file_idx += 1
+                # write to h5
+        if len(label_h5) % sample_per_file == 0 :        
+            if len(data_h5) > 0 :
+                save_h5_file_list(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)))
+                data_h5=[]
+                label_h5=[]
+        
 
     if len(data_h5) > 0 :
-        save_h5_file_list(data_h5, label_h5, h5_name, rangename + str(int(cur_idx/sample_per_file)) + "end")            
+        save_h5_file_list(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)) + "_end")            
 
 class myThread(threading.Thread):
     def __init__(self, threadID, name, startIdx, endIdx):
