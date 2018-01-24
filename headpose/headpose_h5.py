@@ -260,7 +260,10 @@ def sample_gen(rangename,start_idx, end_idx):
         img *= 2/255.0
         img -= 1
         #cv2.imwrite(prefix + "_norm.jpg",img)
-
+        sample.yaw *= 1/180.0
+        sample.pitch *= 1/180.0
+        sample.roll *= 1/180.0
+        
         b, g, r = cv2.split(img)
         data = [b, g, r]
         data = np.reshape(data,(1,channel, height, width))
