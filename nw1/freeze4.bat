@@ -1,0 +1,1 @@
+python freeze_graph.py --input_graph=model4/graph.pbtxt --input_checkpoint=model4/model.ckpt-40000 --input_binary=false --output_graph=bin/model.pb --output_node_names=output --variable_names_blacklist="IsVariableInitialized,global_step" 

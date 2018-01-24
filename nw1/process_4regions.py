@@ -28,7 +28,7 @@ class transform_info:
 
 def generate_transform(imgfolder, lblfolder):
     imglist = getimages(imgfolder)
-    sample_number = 100
+    sample_number = 200
     dmax = 0.2
     dmin = 0.01
     anglemin = -10
@@ -131,7 +131,7 @@ def geo_rotation_img_pts(mat, center, angle):
     return dst
 
 def geo_rotation(mat, tvec, trans):
-    center = (tvec[0] + tvec[10]) * 0.5
+    center = (tvec[0] + tvec[2]) * 0.5
     rotmat = geo_rotation_img_pts(mat, center, trans.anglerot)
     pts2 = transform_pts(tvec, 0,0,trans.anglerot, center, 1.0, False)
     return rotmat, pts2
@@ -218,22 +218,33 @@ def output_img_pts(img, pts, name):
             cv2.line(drawing, (pts2[i*4 + j][0],pts2[i*4+j][1]), (pts2[i*4+((j+1)%4)][0], pts2[i*4+((j+1)%4)][1]), (0,255,0))
     cv2.imwrite(name, drawing)
 
+
+def output_img_pts_simple(img, pts, name):
+    drawing = img.copy()
+    pts2 = pts
+    pts2 = pts2.astype(int)
+    for i in range(0,4):
+        cv2.line(drawing, (pts2[i][0],pts2[i][1]), (pts2[(i+1)%4][0], pts2[(i+1)%4][1]), (0,255,0))
+    cv2.imwrite(name, drawing)
 def generate_train_data(imgfolder, lblfolder, outputfolder):
     trans_list = generate_transform(imgfolder, lblfolder)
     #print(trans_list)
     shuffle(trans_list)
     #print(trans_list)
     i = 0
-    outputsize = 100
+    outputsize = 40
     outputimages = []#np.array((len(trans_list), outputsize, outputsize, 3))
     outputlabels = []#np.array((len(trans_list),32))
     for trans in trans_list:
         print(str(i) + "/" + str(len(trans_list)) + " - " + trans.image)
         img = cv2.imread(trans.image)
-        pvec = readpts(trans.pts)
+        pvec16 = readpts(trans.pts)
+        flip_img_pts(img,pvec16,trans.flipcode)
+        
+        pvec = pvec16[0 : 4]
         #print(pvec)
         #output_img_pts(img, pvec, outputfolder + "//" + str(i) + ".org.jpg")
-        flip_img_pts(img,pvec,trans.flipcode)
+        
         #output_img_pts(img, pvec, outputfolder + "//" + str(i) + ".flip.jpg")
         img, pvec = geo_rotation(img, pvec, trans)
         #output_img_pts(img, pvec, outputfolder + "//" + str(i) + ".rotation.jpg")
@@ -251,26 +262,25 @@ def generate_train_data(imgfolder, lblfolder, outputfolder):
             p[0] *= scalex
             p[1] *= scaley
         #print(pvec)
-        output_img_pts(img2, pvec, outputfolder + "//" + str(i) + ".input.jpg")
+        output_img_pts_simple(img2, pvec, outputfolder + "//" + str(i) + ".input.jpg")
         img2 *= 1/255.0
         img2 -= 0.5
         np_image_data = np.asarray(img2)
         
         pvec *= 1.0/outputsize
         #print(pvec)
-        pvec = pvec.reshape(32)
+        pvec = pvec.reshape(8)
         #print(str(pvec.shape))
         #print(str(np_image_data.shape))
         outputimages.append(np_image_data)
         outputlabels.append(pvec)        
         #np.copyto(outputimages[i], np_image_data)
         #np.copyto(outputlabels[i], pvec)
-        
         i+=1
         #if i==100 :
         #    break
     #data={"features":outputimages,"labels":outputlabels}
-    np.savez("data_100.npz",features=outputimages, labels=outputlabels)
+    np.savez("data_4_40.npz",features=outputimages, labels=outputlabels)
 
 
 imgfolder = "D:/sandbox/utility/scan-image/src/test4"

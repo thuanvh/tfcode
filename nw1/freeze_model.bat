@@ -1,0 +1,4 @@
+python D:\setup\tf\tensorflow\tensorflow\python\tools\freeze_graph.py --input_graph=model1/graph.pbtxt --input_checkpoint=model1/model.ckpt-40000 --input_binary=false --output_graph=model1/frozen_graph.pb --output_node_names="save/Assign_11"
+python freeze_graph.py --input_graph=model1/graph.pbtxt --input_checkpoint=model1/model.ckpt-40000 --input_binary=false --output_graph=model1/frozen_graph.pb --output_node_names="save/Assign_11"
+
+--input_graph=D:\sandbox\utility\scan-image\src\nw\elac2\platforms\windows\model1/model1/graph.pbtxt --input_checkpoint=D:\sandbox\utility\scan-image\src\nw\elac2\platforms\windows\model1/model1/model.ckpt-40000 --input_binary=false --output_graph=D:\sandbox\utility\scan-image\src\nw\elac2\platforms\windows\model1\model1/frozen_graph.pb --output_node_names="save/Assign_11"
