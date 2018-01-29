@@ -10,6 +10,7 @@ import os
 import sys
 #import thread
 import threading
+import argparse
 
 def get_pose_params_from_mat(mat_path):
     # This functions gets the pose parameters from the .mat
@@ -168,6 +169,14 @@ def read_sample_list(datapath, bins):
         #break
     return sample_list
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--size', type=int,
+                    default=100,
+                    help='Size of output data')
+
+FLAGS, unparsed = parser.parse_known_args()
+
 sample_list_file = "sample_list.npz"
 sample_list=[]
 bins = np.array(range(-99, 102, 3))
@@ -191,7 +200,7 @@ print("Sample list size: ", len(sample_list))
 #file_idx = 0
 
 #output_folder = "/media/sf_D_DRIVE/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_100_6/"
-inputsize = 40
+inputsize =  FLAGS.size #40
 height = inputsize #100
 width = inputsize #100
 output_folder = "D:/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_" + str(inputsize) + "/"
@@ -293,6 +302,11 @@ class myThread(threading.Thread):
         print("starting", self.name, self.startIdx, self.endIdx)
         sample_gen(self.name, self.startIdx, self.endIdx)
         print("exiting", self.name)
+
+
+
+#tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+
 #try:
 #    thread.start_new_thread(sample_gen, (0, 2000))
 #    thread.start_new_thread(sample_gen, (2001, 3000))

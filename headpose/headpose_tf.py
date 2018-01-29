@@ -145,7 +145,30 @@ def deepnn(x):
     y_conv = tf.matmul(h_fc1, W_fc2) + b_fc2
   return y_conv#, keep_prob
 
-def cnn_model_fn(x):
+def cnn_model_fn_100(x):
+  """Model function for CNN."""    
+  conv1 = tf.layers.conv2d(inputs=x,filters=20,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+  conv2 = tf.layers.conv2d(inputs=pool1,filters=40,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+  conv3 = tf.layers.conv2d(inputs=pool2,filters=60,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
+  conv4 = tf.layers.conv2d(inputs=pool3,filters=80,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool4 = tf.layers.max_pooling2d(inputs=conv4, pool_size=[2, 2], strides=2)
+  conv5 = tf.layers.conv2d(inputs=pool4,filters=100,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool5 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], strides=2)
+  conv6 = tf.layers.conv2d(inputs=pool5,filters=120,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool6 = tf.layers.max_pooling2d(inputs=conv6, pool_size=[3, 3], strides=1)
+  #conv7 = tf.layers.conv2d(inputs=pool6,filters=140,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  #pool7 = tf.layers.max_pooling2d(inputs=conv7, pool_size=[2, 2], strides=2)
+  pool4_flat = tf.reshape(pool6, [-1, 1 * 1 * 120])
+  dense = tf.layers.dense(inputs=pool4_flat, units=1024, activation=tf.nn.relu)
+  keep_prob = tf.placeholder(tf.float32)
+  dropout = tf.layers.dropout(inputs=dense, rate=keep_prob)
+  logits = tf.layers.dense(inputs=dropout, units=1, name="logits")
+  #logits = tf.layers.dense(inputs=dense, units=32)
+  return logits, keep_prob
+def cnn_model_fn_40(x):
   """Model function for CNN."""    
   conv1 = tf.layers.conv2d(inputs=x,filters=20,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
   pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
@@ -164,6 +187,12 @@ def cnn_model_fn(x):
   logits = tf.layers.dense(inputs=dropout, units=1, name="logits")
   #logits = tf.layers.dense(inputs=dense, units=32)
   return logits, keep_prob
+
+def cnn_model_fn(x, input_size):
+  if input_size == 40:
+    return cnn_model_fn_40(x)
+  elif input_size == 100:
+    return cnn_model_fn_100(x)
 
   
 def conv2d(x, W):
@@ -237,16 +266,16 @@ def main(_):
   #train_labels = data["labels"]
   #print(train_data.shape)
   #print(train_labels.shape)
-  
+  input_size = FLAGS.input_size
   # Create the model
-  x = tf.placeholder(tf.float32, [None, 40, 40, 3])
+  x = tf.placeholder(tf.float32, [None, input_size, input_size, 3])
 
   # Define loss and optimizer
   y_ = tf.placeholder(tf.float32, [None, 1])
 
   # Build the graph for the deep net
   #y_conv = deepnn(x)
-  y_conv, keep_prob = cnn_model_fn(x)
+  y_conv, keep_prob = cnn_model_fn(x, input_size)
 
   with tf.name_scope('loss'):
     #cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_,
@@ -268,7 +297,7 @@ def main(_):
   train_writer.add_graph(tf.get_default_graph())
   batch_size = 100
   #data_size = train_data.shape[0]
-  file_name = "D:\\sandbox\\vmakeup\\model\\headpose\\pitch\\data\\filelist.txt"
+  file_name = FLAGS.data_file #"D:\\sandbox\\vmakeup\\model\\headpose\\pitch\\data\\filelist.txt"
   h5data = H5DataList(file_name, batch_size)
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
@@ -313,5 +342,11 @@ if __name__ == '__main__':
   parser.add_argument('--restore', type=str,
                       default='',
                       help='Directory for storing input data')
+  parser.add_argument('--input_size', type=int,
+                      default=100,
+                      help='Input size of model 40, 100')
+  parser.add_argument('--data_file', type=str,
+                      default="train.txt",
+                      help='train.txt data file list')
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
