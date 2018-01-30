@@ -62,17 +62,17 @@ class TrainSample:
     beta = 0
     box=[]#xmin,xmax,ymin,ymax
 
-def create_h5_file(folder,train_file_idx, sample_per_file, channel, height, width):
+def create_h5_file(folder,train_file_idx, sample_per_file, channel, height, width, label_len):
     h5file = h5py.File(folder + "/train" + str(train_file_idx) + ".h5", "w")
     #print(folder,train_file_idx, sample_per_file, channel, height, width)
     h5file.create_dataset("data", (sample_per_file, channel, height, width), dtype='f4')
-    h5file.create_dataset("label", (sample_per_file, 1), dtype='f4')
+    h5file.create_dataset("label", (sample_per_file, label_len), dtype='f4')
     return h5file
 
 def create_h5_file_list(suffix, train_file_idx, sample_per_file, channel, height, width):
     h5_file_list = []
     for i in range(len(suffix)):
-        h5_file_list.append(create_h5_file(suffix[i],train_file_idx, sample_per_file, channel, height, width))
+        h5_file_list.append(create_h5_file(suffix[i],train_file_idx, sample_per_file, channel, height, width, 1))
     return h5_file_list
 
 def add_sample(data_idx, data, label_list, h5_file_list):
@@ -93,6 +93,22 @@ def save_h5_file_list(data_h5, label_h5, suffix, train_file_idx):
     for h5f in h5_file_list:
         h5f.close()
 
+def save_h5_file_combine(data_h5, label_h5, suffix, train_file_idx):
+    print("Save h5 file ", train_file_idx)
+    sample_per_file = len(data_h5)
+    #print(sample_per_file, data_h5[0].shape)
+    channel = data_h5[0].shape[1]
+    height = data_h5[0].shape[2]
+    width = data_h5[0].shape[3]
+    label_len = len(label_h5[0])
+    label_h5 = np.reshape(label_h5,(sample_per_file, label_len))
+    h5_file = create_h5_file(suffix[0], train_file_idx, sample_per_file, channel, height, width, label_len)
+    #h5_file['data']=data_h5
+    #h5_file['label'] = label_h5
+    for i in range(sample_per_file):
+        h5_file['data'][i] = data_h5[i]
+        h5_file['label'][i] = label_h5[i]
+    h5_file.close()
 
 def read_sample_list(datapath, bins):
     file_list = []
@@ -174,6 +190,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--size', type=int,
                     default=100,
                     help='Size of output data')
+parser.add_argument('--combineall', type=int,
+                    default=1,
+                    help='Output all label in one file')
 
 FLAGS, unparsed = parser.parse_known_args()
 
@@ -204,7 +223,10 @@ inputsize =  FLAGS.size #40
 height = inputsize #100
 width = inputsize #100
 output_folder = "D:/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_" + str(inputsize) + "/"
-h5_name = ["yaw_cont", "pitch_cont", "roll_cont"]#, "yaw_bin", "pitch_bin", "roll_bin"]
+if FLAGS.combineall == 0 :
+    h5_name = ["yaw_cont", "pitch_cont", "roll_cont", "yaw_bin", "pitch_bin", "roll_bin"]
+else:
+    h5_name = ["combine"]
 for i in range(len(h5_name)):
     h5_name[i] = output_folder + h5_name[i]    
     if not os.path.exists(h5_name[i]):
@@ -262,7 +284,8 @@ def sample_gen(rangename,start_idx, end_idx):
             #cv2.imwrite(prefix + "_blur.jpg", img)    
         img = cv2.add(cv2.multiply(img, np.array([sample.alpha])), np.array([sample.beta]))
         
-        #cv2.imwrite(prefix + ".jpg", img)
+        #img_suffix = "_" + str(int(sample.yaw))+"_"+str(int(sample.pitch))+"_"+str(int(sample.roll))
+        #cv2.imwrite(prefix + img_suffix + ".jpg", img)
                 
 
         img = cv2.resize(img, (width, height)).astype(np.float32)
@@ -276,20 +299,26 @@ def sample_gen(rangename,start_idx, end_idx):
         b, g, r = cv2.split(img)
         data = [b, g, r]
         data = np.reshape(data,(1,channel, height, width))
-        label_list = [sample.yaw, sample.pitch, sample.roll]#, sample.yaw_bin, sample.pitch_bin, sample.roll_bin]
+        label_list = [sample.yaw, sample.pitch, sample.roll, sample.yaw_bin, sample.pitch_bin, sample.roll_bin]
         #add_sample(file_idx % sample_per_file, data, label_list, h5_file_list)
         data_h5.append(data)
         label_h5.append(label_list)
                 # write to h5
         if len(label_h5) % sample_per_file == 0 :        
             if len(data_h5) > 0 :
-                save_h5_file_list(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)))
+                if FLAGS.combineall == 0 :
+                    save_h5_file_list(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)))
+                else:
+                    save_h5_file_combine(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)))
                 data_h5=[]
                 label_h5=[]
         
 
     if len(data_h5) > 0 :
-        save_h5_file_list(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)) + "_end")            
+        if FLAGS.combineall == 0 :
+            save_h5_file_list(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)) + "_end")    
+        else:
+            save_h5_file_combine(data_h5, label_h5, h5_name, rangename + "_" + str(int(cur_idx/sample_per_file)) + "_end")        
 
 class myThread(threading.Thread):
     def __init__(self, threadID, name, startIdx, endIdx):
