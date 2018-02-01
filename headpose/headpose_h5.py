@@ -12,6 +12,8 @@ import sys
 import threading
 import argparse
 
+from data_sample import TrainSample
+
 def get_pose_params_from_mat(mat_path):
     # This functions gets the pose parameters from the .mat
     # Annotations that come with the Pose_300W_LP dataset.
@@ -46,21 +48,7 @@ def read_mat(mat_path):
     pt2d = mat['pt2d']
     return pose_params,pt2d
 
-class TrainSample:
-    img_path = ""
-    yaw = 0.0
-    pitch = 0.0
-    roll = 0.0
-    yaw_bin = 0
-    pitch_bin = 0
-    roll_bin = 0
-    face_pts =[]
-    blur = False
-    flip = False
-    trans = 0.0
-    alpha = 1.0
-    beta = 0
-    box=[]#xmin,xmax,ymin,ymax
+
 
 def create_h5_file(folder,train_file_idx, sample_per_file, channel, height, width, label_len):
     h5file = h5py.File(folder + "/train" + str(train_file_idx) + ".h5", "w")
@@ -198,6 +186,8 @@ parser.add_argument('--combineall', type=int,
 FLAGS, unparsed = parser.parse_known_args()
 
 
+bins = np.array(range(-99, 102, 3))
+print(bins, len(bins))
 
 sample_list_file = "sample_list.npz"
 sample_list=[]
