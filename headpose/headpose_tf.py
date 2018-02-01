@@ -145,6 +145,29 @@ def deepnn(x):
     y_conv = tf.matmul(h_fc1, W_fc2) + b_fc2
   return y_conv#, keep_prob
 
+def cnn_model_fn_224(x):
+  """Model function for CNN."""    
+  conv1 = tf.layers.conv2d(inputs=x,filters=20,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+  conv2 = tf.layers.conv2d(inputs=pool1,filters=40,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+  conv3 = tf.layers.conv2d(inputs=pool2,filters=60,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
+  conv4 = tf.layers.conv2d(inputs=pool3,filters=80,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool4 = tf.layers.max_pooling2d(inputs=conv4, pool_size=[2, 2], strides=2)
+  conv5 = tf.layers.conv2d(inputs=pool4,filters=100,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool5 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], strides=2)
+  conv6 = tf.layers.conv2d(inputs=pool5,filters=120,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool6 = tf.layers.max_pooling2d(inputs=conv6, pool_size=[2, 2], strides=2)
+  conv7 = tf.layers.conv2d(inputs=pool6,filters=140,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool7 = tf.layers.max_pooling2d(inputs=conv7, pool_size=[2, 2], strides=2)
+  pool4_flat = tf.reshape(pool6, [-1, 1 * 1 * 140])
+  dense = tf.layers.dense(inputs=pool4_flat, units=1024, activation=tf.nn.relu)
+  keep_prob = tf.placeholder_with_default(1.0, None)
+  dropout = tf.layers.dropout(inputs=dense, rate=keep_prob)
+  logits = tf.layers.dense(inputs=dropout, units=1, name="logits")
+  #logits = tf.layers.dense(inputs=dense, units=32)
+  return logits, keep_prob
 def cnn_model_fn_100(x):
   """Model function for CNN."""    
   conv1 = tf.layers.conv2d(inputs=x,filters=20,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
@@ -188,11 +211,35 @@ def cnn_model_fn_40(x):
   #logits = tf.layers.dense(inputs=dense, units=32)
   return logits, keep_prob
 
-def cnn_model_fn(x, input_size):
-  if input_size == 40:
-    return cnn_model_fn_40(x)
-  elif input_size == 100:
-    return cnn_model_fn_100(x)
+def cnn_model_bin_fn_40(x, binsize):
+  """Model function for CNN."""    
+  conv1 = tf.layers.conv2d(inputs=x,filters=20,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+  conv2 = tf.layers.conv2d(inputs=pool1,filters=40,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+  conv3 = tf.layers.conv2d(inputs=pool2,filters=60,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
+  conv4 = tf.layers.conv2d(inputs=pool3,filters=80,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool4 = tf.layers.max_pooling2d(inputs=conv4, pool_size=[2, 2], strides=2)
+  conv5 = tf.layers.conv2d(inputs=pool4,filters=100,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  pool5 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], strides=2)
+  pool4_flat = tf.reshape(pool5, [-1, 1 * 1 * 100])
+  dense = tf.layers.dense(inputs=pool4_flat, units=1024, activation=tf.nn.relu)
+  keep_prob = tf.placeholder_with_default(1.0, None) #tf.float32)
+  dropout = tf.layers.dropout(inputs=dense, rate=keep_prob)
+  logits = tf.layers.dense(inputs=dropout, units=binsize, name="logits")
+  #logits = tf.layers.dense(inputs=dense, units=32)
+  return logits, keep_prob
+
+def cnn_model_fn(x, input_size, is_bin, bins):
+  if not is_bin:
+    if input_size == 40:
+      return cnn_model_fn_40(x)
+    elif input_size == 100:
+      return cnn_model_fn_100(x)
+  else:
+    if input_size == 40:
+      return cnn_model_bin_fn_40(x, len(bins))
 
   
 def conv2d(x, W):
@@ -258,6 +305,10 @@ class H5DataList:
       
 
 def main(_):
+  bins = np.array(range(-99, 102, 3))
+  print(bins, len(bins))
+  is_binned_label = FLAGS.label_type == 'bin'
+  print(FLAGS.label_type)
   # Import data
   #mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
   #data = np.load("data_4_40.npz")
@@ -271,28 +322,35 @@ def main(_):
   x = tf.placeholder(tf.float32, [None, input_size, input_size, 3])
 
   # Define loss and optimizer
-  y_ = tf.placeholder(tf.float32, [None, 1])
+  if is_binned_label:
+    y_ = tf.placeholder(tf.int64, [None, len(bins)])
+  else:
+    y_ = tf.placeholder(tf.float32, [None, 1])
 
   # Build the graph for the deep net
   #y_conv = deepnn(x)
-  y_conv, keep_prob = cnn_model_fn(x, input_size)
+  y_conv, keep_prob = cnn_model_fn(x, input_size, is_binned_label, bins)
 
   with tf.name_scope('loss'):
-    #cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_,
-    #                                                        logits=y_conv)
-    lossfn = tf.losses.mean_squared_error(labels=y_, predictions=y_conv)
-  lossfn = tf.reduce_mean(lossfn)
+    if is_binned_label:
+      lossfn = tf.nn.softmax_cross_entropy_with_logits_v2(labels=y_,logits=y_conv)
+    else:
+      lossfn = tf.losses.mean_squared_error(labels=y_, predictions=y_conv)      
+  tf.summary.scalar('loss', lossfn)
+  #lossfn = tf.reduce_mean(lossfn)
 
   with tf.name_scope('adam_optimizer'):
     train_step = tf.train.AdamOptimizer(1e-4).minimize(lossfn)
 
-  #with tf.name_scope('accuracy'):
-  #  correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-  #  correct_prediction = tf.cast(correct_prediction, tf.float32)
-  #accuracy = tf.reduce_mean(correct_prediction)
+  with tf.name_scope('accuracy'):
+    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+    correct_prediction = tf.cast(correct_prediction, tf.float32)
+  accuracy = tf.reduce_mean(correct_prediction)
+  tf.summary.scalar('accuracy', accuracy)
 
   graph_location = FLAGS.model_dir
   print('Saving graph to: %s' % graph_location)
+  merged = tf.summary.merge_all()
   train_writer = tf.summary.FileWriter(graph_location)
   train_writer.add_graph(tf.get_default_graph())
   batch_size = 100
@@ -306,7 +364,7 @@ def main(_):
     if FLAGS.restore != "" :
       saver.restore(sess, FLAGS.restore)
 
-    for i in range(20001):
+    for i in range(200001):
       
       # #batch = mnist.train.next_batch(50)
       # #start = (i * batch_size)%data_size
@@ -320,19 +378,44 @@ def main(_):
       #   batch_x = np.concatenate((train_data[start:data_size],train_data[0:end]),axis=0)
       #   batch_y = np.concatenate((train_labels[start:data_size],train_labels[0:end]),axis=0)
       batch_x, batch_y = h5data.get_next_batch()
+      if is_binned_label :
+        batch_y *= 180
+        batch_y = np.digitize(batch_y, bins) - 1  
+        batch_y = tf.one_hot(indices=batch_y, depth=len(bins)).eval()
+        batch_y = np.reshape(batch_y, (batch_y.shape[0],len(bins)))
       #print(batch_x.shape)
       #print(batch_y.shape)
-      if i % 100 == 0:
-        train_loss = lossfn.eval(feed_dict={
-            x: batch_x, y_: batch_y})
-        print('step %d, training loss %g' % (i, train_loss))
+      if i % 500 == 0:
+        #print('step ', i)
+        if is_binned_label :
+          train_loss = accuracy.eval(feed_dict={x: batch_x, y_: batch_y})
+          print('step %d, accuracy %g' % (i, train_loss))
+        else:
+          train_loss = lossfn.eval(feed_dict={x: batch_x, y_: batch_y})
+          print('step %d, training loss %g' % (i, train_loss))
+
       if i % 1000 == 0:
         save_path = saver.save(sess, graph_location + "/"+"model"+str(i)+".ckpt")
         print("Model saved in file: %s" % save_path)
-      train_step.run(feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
+      #summary, _ = train_step.run(feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
+      #train_writer.add_summary(summary, i)
+      # if i % 100 == 99:  # Record execution stats
+      #   run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+      #   run_metadata = tf.RunMetadata()
+      #   summary, _ = sess.run([merged, train_step],
+      #                          feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5},
+      #                          options=run_options,
+      #                          run_metadata=run_metadata)
+      #   train_writer.add_run_metadata(run_metadata, 'step%03d' % i)
+      #   train_writer.add_summary(summary, i)
+      #   print('Adding run metadata for', i)
+      # else: # Record a summary
+      #summary, _ = sess.run([merged, train_step], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
+      #train_writer.add_summary(summary, i)
 
     #print('test accuracy %g' % accuracy.eval(feed_dict={
     #    x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+  train_writer.close()
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
@@ -348,5 +431,8 @@ if __name__ == '__main__':
   parser.add_argument('--data_file', type=str,
                       default="train.txt",
                       help='train.txt data file list')
+  parser.add_argument('--label_type', type=str,
+                      default="cont",
+                      help='use continue angle : cont, bin')
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

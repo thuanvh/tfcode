@@ -186,6 +186,7 @@ def read_sample_list(datapath, bins):
     return sample_list
 
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--size', type=int,
                     default=100,
@@ -196,10 +197,11 @@ parser.add_argument('--combineall', type=int,
 
 FLAGS, unparsed = parser.parse_known_args()
 
+
+
 sample_list_file = "sample_list.npz"
 sample_list=[]
-bins = np.array(range(-99, 102, 3))
-print(bins, len(bins))
+
 if not os.path.exists(sample_list_file):
     #datapath = "/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP"
     datapath = "D:/sandbox/images/300W-LP/300W_LP"
