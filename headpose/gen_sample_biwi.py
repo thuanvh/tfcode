@@ -26,26 +26,19 @@ def shape_to_np(shape, dtype="int"):
 	# return the list of (x, y)-coordinates
   return coords
 
-def BIWI_gen_sample_list(datapath, labelpath, dlib_data, bins):
+def BIWI_gen_sample_list(biwi_file_list, dlib_data, bins):
   detector = dlib.get_frontal_face_detector()
   predictor = dlib.shape_predictor(dlib_data)
   file_list = []
 
-  for(dirpath, dirnames, filenames) in walk(datapath):
-      for f in filenames:
-          if f.endswith(".png"):
-              file_list.append(dirpath + "/" + f)
-  print(len(file_list))
-
-  #file_list2 = glob.glob("/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP/**/*.jpg", recursive=True)
-  #print(len(file_list2))
-
   sample_list = []
   sample_number = 10
   file_idx = 0
-  for filepath in file_list:  
+  with open(biwi_file_list,"r") as ins:
+    for line in ins:
+      filepath, rotation_path = line.rstrip("\n").split(",")
       #print(file_idx, len(file_list), filepath)
-      sys.stdout.write("Reading pose: %d / %d %s \r" % (file_idx, len(file_list), filepath) )
+      sys.stdout.write("Reading pose: %d %s \r" % (file_idx, filepath) )
       sys.stdout.flush()
       file_idx+=1
       src = cv2.imread(filepath)
@@ -53,7 +46,7 @@ def BIWI_gen_sample_list(datapath, labelpath, dlib_data, bins):
       if src.shape[0] == 0 or src.shape[1] == 0:
           print("Error in reading image", filepath)
       
-      rotation_path = labelpath + os.path.basename(filepath)[:-3]+"txt"
+      #rotation_path = labelpath + os.path.basename(filepath)[:-3]+"txt"
       pose = np.genfromtxt(rotation_path,delimiter=' ')
       pitch = -pose[0]
       yaw = pose[1]
@@ -120,13 +113,14 @@ print(bins, len(bins))
 
 # Biwi sample list
 if True:
-    biwi_sample_file = "biwi_sample_list.npz"
+    biwi_sample_file = "tmp/biwi_sample_list.npz"
     biwi_sample_list = []
     if not os.path.exists(biwi_sample_file):
         #datapath = "/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP"
-        biwi_datapath = "C:/out/kinec_head_pose_image_train/"
-        biwi_label_path = "C:/out/kinec_head_pose_label/"
+        #biwi_datapath = "C:/out/kinec_head_pose_image_train/"
+        #biwi_label_path = "C:/out/kinec_head_pose_label/"
+        biwi_file_list = "tmp/biwi-train.txt"
         dlib_data = "D:/sandbox/vmakeup/VirtualMakeover/Binaries/Bin/shape_predictor_68_face_landmarks.dat"
-        print("Create samples", biwi_datapath)
-        biwi_sample_list = BIWI_gen_sample_list(biwi_datapath, biwi_label_path, dlib_data, bins)
+        print("Create samples")
+        biwi_sample_list = BIWI_gen_sample_list(biwi_file_list, dlib_data, bins)
         np.savez(biwi_sample_file,sample_list=biwi_sample_list)

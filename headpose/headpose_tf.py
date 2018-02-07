@@ -38,6 +38,15 @@ import h5py
 
 FLAGS = None
 
+# create a slice object from a string
+def get_slice_obj(slicearg):
+    #slice_ints = tuple([ int(n) for n in slicearg.split(':') ])
+    #return apply(slice, slice_ints)
+    return slice(*map(lambda x: int(x.strip()) if x.strip() else None, slicearg.split(':')))
+
+def ints_from_slicearg(slicearg):
+    slice_obj = get_slice_obj(slicearg)
+    return(range(slice_obj.start or 0, slice_obj.stop or -1, slice_obj.step or 1))
 
 def deepnn(x):
   """deepnn builds the graph for a deep net for classifying digits.
@@ -265,7 +274,7 @@ def bias_variable(shape):
   return tf.Variable(initial)
 
 class H5DataList:
-  def __init__(self, listfilename, batch_size):
+  def __init__(self, listfilename, batch_size, label_slice=slice(1)):
     #threading.Thread.__init__(self)
     with open(listfilename) as f: self.file_list = [line.rstrip('\n') for line in f]
     self.file_idx = 0
@@ -273,6 +282,7 @@ class H5DataList:
     self.cur_data = []
     self.cur_label = []
     self.cur_idx = 0
+    self.y_slice = label_slice
   def get_next_batch(self):
     batch_x = []
     batch_y = []
@@ -284,7 +294,8 @@ class H5DataList:
         f = h5py.File(self.file_list[self.file_idx],'r')
         data = f.get('data')
         self.cur_data = np.array(data)
-        self.cur_data = np.swapaxes(np.swapaxes(self.cur_data, 1, 2), 2, 3)
+        # Swapaxes for caffe h5
+        #self.cur_data = np.swapaxes(np.swapaxes(self.cur_data, 1, 2), 2, 3)
         #img = self.cur_data[0]
         label = f.get('label')
         self.cur_label = np.array(label)
@@ -294,11 +305,11 @@ class H5DataList:
       #print("Get data from", start, end)
       if len(batch_x) == 0:
         batch_x = self.cur_data[start:end,:]
-        batch_y = self.cur_label[start:end,:]
+        batch_y = self.cur_label[start:end,self.y_slice]
       else:
         #print("Append batch")
         batch_x = np.concatenate((batch_x,self.cur_data[start:end,:]),axis=0)
-        batch_y = np.concatenate((batch_y,self.cur_label[start:end,:]),axis=0)
+        batch_y = np.concatenate((batch_y,self.cur_label[start:end,self.y_slice]),axis=0)
       self.cur_idx = end
     return batch_x, batch_y
 
@@ -342,11 +353,12 @@ def main(_):
   with tf.name_scope('adam_optimizer'):
     train_step = tf.train.AdamOptimizer(1e-4).minimize(lossfn)
 
-  with tf.name_scope('accuracy'):
-    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-    correct_prediction = tf.cast(correct_prediction, tf.float32)
-  accuracy = tf.reduce_mean(correct_prediction)
-  tf.summary.scalar('accuracy', accuracy)
+  if is_binned_label:
+    with tf.name_scope('accuracy'):
+      correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+      correct_prediction = tf.cast(correct_prediction, tf.float32)
+    accuracy = tf.reduce_mean(correct_prediction)
+    tf.summary.scalar('accuracy', accuracy)
 
   graph_location = FLAGS.model_dir
   print('Saving graph to: %s' % graph_location)
@@ -356,7 +368,9 @@ def main(_):
   batch_size = 100
   #data_size = train_data.shape[0]
   file_name = FLAGS.data_file #"D:\\sandbox\\vmakeup\\model\\headpose\\pitch\\data\\filelist.txt"
-  h5data = H5DataList(file_name, batch_size)
+  label_slice = get_slice_obj(FLAGS.label_slice)
+  print("Slice object",label_slice)
+  h5data = H5DataList(file_name, batch_size, label_slice)
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
@@ -434,5 +448,8 @@ if __name__ == '__main__':
   parser.add_argument('--label_type', type=str,
                       default="cont",
                       help='use continue angle : cont, bin')
+  parser.add_argument('--label_slice', type=str,
+                      default="1",
+                      help='use slice : 1, 1:3')
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
