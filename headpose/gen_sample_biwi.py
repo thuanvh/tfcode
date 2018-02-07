@@ -71,42 +71,42 @@ def BIWI_gen_sample_list(datapath, labelpath, dlib_data, bins):
         # Bin values    
         binned_pose = np.digitize([yaw, pitch, roll], bins) - 1  
         for i in range(sample_number):  
-            sample = TrainSample()
-            sample.img_path = filepath        
-            sample.face_pts = pt2d        
+          sample = TrainSample()
+          sample.img_path = filepath        
+          sample.face_pts = pt2d        
+          
+          sample.pitch = pitch
+          sample.yaw = yaw
+          sample.roll = roll
             
-            sample.pitch = pitch
-            sample.yaw = yaw
-            sample.roll = roll
-              
-            sample.yaw_bin = binned_pose[0]
-            sample.pitch_bin = binned_pose[1]
-            sample.roll_bin = binned_pose[2]
-            
-            sample.flip = np.random.random_sample() < 0.5
-            sample.blur = np.random.random_sample() < 0.05
-            sample.trans = np.random.random_sample()
-            sample.alpha = 1.0 + 0.1 * np.random.random_sample() - 0.05
-            sample.beta = 10 * np.random.random_sample()
+          sample.yaw_bin = binned_pose[0]
+          sample.pitch_bin = binned_pose[1]
+          sample.roll_bin = binned_pose[2]
+          
+          sample.flip = np.random.random_sample() < 0.5
+          sample.blur = np.random.random_sample() < 0.05
+          sample.trans = np.random.random_sample()
+          sample.alpha = 1.0 + 0.1 * np.random.random_sample() - 0.05
+          sample.beta = 10 * np.random.random_sample()
 
-            k =  sample.trans * 0.2 + 0.2
-            x_min = min(pt2d[:,0])
-            y_min = min(pt2d[:,1])
-            x_max = max(pt2d[:,0])
-            y_max = max(pt2d[:,1])
-            #cv2.rectangle(src, (x_min, y_min), (x_max,y_max), (30,0,255))
-            x_min -= int(0.6 * k * abs(x_max - x_min))
-            y_min -= int(2 * k * abs(y_max - y_min))
-            x_max += int(0.6 * k * abs(x_max - x_min))
-            y_max += int(0.6 * k * abs(y_max - y_min))
-            x_min = int(max(round(x_min),0))
-            y_min = int(max(round(y_min),0))
-            x_max = int(min(round(x_max),src.shape[1]-1))
-            y_max = int(min(round(y_max),src.shape[0]-1))
-            
-            sample.box=[x_min,x_max,y_min,y_max]
-            sample_list.append(sample)
-            #break
+          k =  sample.trans * 0.2 + 0.2
+          x_min = min(pt2d[:,0])
+          y_min = min(pt2d[:,1])
+          x_max = max(pt2d[:,0])
+          y_max = max(pt2d[:,1])
+          #cv2.rectangle(src, (x_min, y_min), (x_max,y_max), (30,0,255))
+          x_min -= int(0.6 * k * abs(x_max - x_min))
+          y_min -= int(2 * k * abs(y_max - y_min))
+          x_max += int(0.6 * k * abs(x_max - x_min))
+          y_max += int(0.6 * k * abs(y_max - y_min))
+          x_min = int(max(round(x_min),0))
+          y_min = int(max(round(y_min),0))
+          x_max = int(min(round(x_max),src.shape[1]-1))
+          y_max = int(min(round(y_max),src.shape[0]-1))
+          
+          sample.box=[x_min,x_max,y_min,y_max]
+          sample_list.append(sample)
+          #break
         #break
         #cv2.rectangle(src, (x_min, y_min), (x_max,y_max), (0,0,255))
         #cv2.rectangle(src, (d.left(), d.top()), (d.right(), d.bottom()), (0,255,0))
