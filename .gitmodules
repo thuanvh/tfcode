@@ -1,0 +1,13 @@
+[submodule "deepgaze"]
+	path = headpose/thirdparty/deepgaze/src
+	url = https://github.com/mpatacchiola/deepgaze.git
+	branch = master
+[submodule "yingoubing"]
+	path = headpose/thirdparty/yingoubing/head-pose-estimation
+	url = https://github.com/yinguobing/head-pose-estimation.git
+	branch = master
+[submodule "fengju514"]
+	path = headpose/thirdparty/faceposenet/faceposenet
+	url = https://github.com/fengju514/Face-Pose-Net.git
+	branch = master
+	
