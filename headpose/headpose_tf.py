@@ -371,6 +371,7 @@ def main(_):
   label_slice = get_slice_obj(FLAGS.label_slice)
   print("Slice object",label_slice)
   h5data = H5DataList(file_name, batch_size, label_slice)
+  max_iter = FLAGS.max_iter + 1
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
@@ -378,7 +379,7 @@ def main(_):
     if FLAGS.restore != "" :
       saver.restore(sess, FLAGS.restore)
 
-    for i in range(200001):
+    for i in range(max_iter):
       
       # #batch = mnist.train.next_batch(50)
       # #start = (i * batch_size)%data_size
@@ -399,7 +400,7 @@ def main(_):
         batch_y = np.reshape(batch_y, (batch_y.shape[0],len(bins)))
       #print(batch_x.shape)
       #print(batch_y.shape)
-      if i % 500 == 0:
+      if i % 1000 == 0:
         #print('step ', i)
         if is_binned_label :
           train_loss = accuracy.eval(feed_dict={x: batch_x, y_: batch_y})
@@ -408,7 +409,7 @@ def main(_):
           train_loss = lossfn.eval(feed_dict={x: batch_x, y_: batch_y})
           print('step %d, training loss %g' % (i, train_loss))
 
-      if i % 1000 == 0:
+      if i % 10000 == 0:
         save_path = saver.save(sess, graph_location + "/"+"model"+str(i)+".ckpt")
         print("Model saved in file: %s" % save_path)
       #summary, _ = train_step.run(feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
@@ -426,6 +427,8 @@ def main(_):
       # else: # Record a summary
       #summary, _ = sess.run([merged, train_step], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
       #train_writer.add_summary(summary, i)
+      summary, _ = sess.run([merged, train_step], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
+      train_writer.add_summary(summary, i)
 
     #print('test accuracy %g' % accuracy.eval(feed_dict={
     #    x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
@@ -451,5 +454,8 @@ if __name__ == '__main__':
   parser.add_argument('--label_slice', type=str,
                       default="1",
                       help='use slice : 1, 1:3')
+  parser.add_argument('--max_iter', type=int,
+                      default=200000,
+                      help='Input size of model 40, 100')
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
