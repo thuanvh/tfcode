@@ -71,6 +71,9 @@ parser.add_argument('--combineall', type=int,
 parser.add_argument('--sample_file', type=str,
                     default="sample_list.npz",
                     help='sample list file')
+parser.add_argument('--thread', type=int,
+                    default=8,
+                    help='thread')
 
 FLAGS, unparsed = parser.parse_known_args()
 
@@ -170,10 +173,15 @@ def sample_gen(rangename,start_idx, end_idx):
         sample.pitch *= 1/180.0
         sample.roll *= 1/180.0
         
-        b, g, r = cv2.split(img)
-        data = [b, g, r]
+        # Format of caffe 3 x h x w
+        #b, g, r = cv2.split(img)
+        #data = [b, g, r]
         #data = np.reshape(data,(1,channel, height, width))
+
+        # Format of tf h x w x 3
+        data = img
         data = np.reshape(data, (1, height, width, channel))
+
         label_list = [sample.yaw, sample.pitch, sample.roll, sample.yaw_bin, sample.pitch_bin, sample.roll_bin]
         #add_sample(file_idx % sample_per_file, data, label_list, h5_file_list)
         data_h5.append(data)
@@ -223,7 +231,7 @@ class myThread(threading.Thread):
 #thread1.start()
 #thread2.start()
 
-thread_num = 8
+thread_num = FLAGS.thread #8
 data_size=int(len(sample_list)/thread_num)
 for tid in range(thread_num):
     t = myThread(tid,"a"+str(tid), data_size * tid, data_size * (tid+1))

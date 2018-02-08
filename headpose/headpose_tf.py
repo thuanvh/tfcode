@@ -372,6 +372,8 @@ def main(_):
   print("Slice object",label_slice)
   h5data = H5DataList(file_name, batch_size, label_slice)
   max_iter = FLAGS.max_iter + 1
+  save_iter= FLAGS.save_iter
+  info_iter= FLAGS.info_iter
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
@@ -400,7 +402,7 @@ def main(_):
         batch_y = np.reshape(batch_y, (batch_y.shape[0],len(bins)))
       #print(batch_x.shape)
       #print(batch_y.shape)
-      if i % 1000 == 0:
+      if i % info_iter == 0:
         #print('step ', i)
         if is_binned_label :
           train_loss = accuracy.eval(feed_dict={x: batch_x, y_: batch_y})
@@ -409,11 +411,11 @@ def main(_):
           train_loss = lossfn.eval(feed_dict={x: batch_x, y_: batch_y})
           print('step %d, training loss %g' % (i, train_loss))
 
-      if i % 10000 == 0:
+      if i % save_iter == 0:
         save_path = saver.save(sess, graph_location + "/"+"model"+str(i)+".ckpt")
         print("Model saved in file: %s" % save_path)
-      #summary, _ = train_step.run(feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
-      #train_writer.add_summary(summary, i)
+      #train_step.run(feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
+      
       # if i % 100 == 99:  # Record execution stats
       #   run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
       #   run_metadata = tf.RunMetadata()
@@ -456,6 +458,12 @@ if __name__ == '__main__':
                       help='use slice : 1, 1:3')
   parser.add_argument('--max_iter', type=int,
                       default=200000,
-                      help='Input size of model 40, 100')
+                      help='max_iter')
+  parser.add_argument('--save_iter', type=int,
+                      default=10000,
+                      help='save_iter')
+  parser.add_argument('--info_iter', type=int,
+                      default=1000,
+                      help='info_iter')
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
