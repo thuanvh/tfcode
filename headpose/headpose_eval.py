@@ -40,10 +40,12 @@ plt.legend(["roll2","truth"])
 #plt.savefig(folder+"y2roll.png")
 plt.savefig(folder+"all.png")
 
-t1=100
+t0=len(xyaw)-1000
+t1=len(xyaw)
+tr=slice(t0,t1)
 t=range(len(xyaw))
-plt.plot(t[0:t1],xyaw[0:t1],'r-',t[0:t1],xpitch[0:t1],'g-',t[0:t1],xroll[0:t1],'b-',t[0:t1],y1yaw[0:t1],'r--',t[0:t1],y1pitch[0:t1],'g--',t[0:t1],y1roll[0:t1],'b--')
-plt.plot(t[0:t1],xyaw[0:t1],'r-',t[0:t1],xpitch[0:t1],'g-',t[0:t1],xroll[0:t1],'b-',t[0:t1],y2yaw[0:t1],'r--',t[0:t1],y2pitch[0:t1],'g--',t[0:t1],y2roll[0:t1],'b--')
+plt.plot(t[tr],xyaw[tr],'r-',t[tr],xpitch[tr],'g-',t[tr],xroll[tr],'b-',t[tr],y1yaw[tr],'r--',t[tr],y1pitch[tr],'g--',t[tr],y1roll[tr],'b--')
+#plt.plot(t[tr],xyaw[tr],'r-',t[tr],xpitch[tr],'g-',t[tr],xroll[tr],'b-',t[tr],y2yaw[tr],'r--',t[tr],y2pitch[tr],'g--',t[tr],y2roll[tr],'b--')
 plt.show()
 
 plt.figure(figsize=(20,10))
