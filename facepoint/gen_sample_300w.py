@@ -78,10 +78,10 @@ def f300W_gen_sample_list(file_list):
 
 # 300w sample list
 if True:
-    sample_file = "tmp/sample_300w.npz"
+    sample_file = "tmp/sample_300w_inout.npz" #"tmp/sample_300w.npz"
     sample_list = []
     if not os.path.exists(sample_file):
-        file_list = "tmp/filelist_300w.txt"
+        file_list = "tmp/filelist_300w_inout.txt" #"tmp/filelist_300w.txt"
         print("Create samples")
         sample_list = f300W_gen_sample_list(file_list)
         np.savez(sample_file,sample_list=sample_list)
