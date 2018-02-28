@@ -48,6 +48,14 @@ plt.plot(t[tr],xyaw[tr],'r-',t[tr],xpitch[tr],'g-',t[tr],xroll[tr],'b-',t[tr],y1
 #plt.plot(t[tr],xyaw[tr],'r-',t[tr],xpitch[tr],'g-',t[tr],xroll[tr],'b-',t[tr],y2yaw[tr],'r--',t[tr],y2pitch[tr],'g--',t[tr],y2roll[tr],'b--')
 plt.show()
 
+file="out7.csv"
+data = np.genfromtxt(file,delimiter=',')
+xyaw=data[:,1]
+xpitch=data[:,2]
+xroll=data[:,3]
+y1yaw=data[:,4]
+y1pitch=data[:,5]
+y1roll=data[:,6]
 plt.figure(figsize=(20,10))
 plt.subplot(311)
 plt.plot(xyaw,y1yaw,'r,',xyaw,xyaw,'b-')
