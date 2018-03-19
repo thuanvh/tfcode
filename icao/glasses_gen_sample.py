@@ -31,19 +31,24 @@ line_list = []
 
 glassestinted_file_list = [
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-2.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-3.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-4.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-5.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-6.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-7.txt"]
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-2.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-3.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-4.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-5.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-6.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-7.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-8.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-9.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-10.txt"]
 none_glassestinted_file_list = [
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted2.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted3.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted4.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted5.txt",
-"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted7.txt"]
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted2.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted3.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted4.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted5.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted7.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted8.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted9.txt"]
 
 def append_file(line_list, file_list, label):
   file_idx = 0
@@ -112,8 +117,8 @@ def gen_sample_list(line_list, sample_number):
       pt2d = predictor(gray, one_rect)
       pt2d = shape_to_np(pt2d)
       #print(pose)
-      #roi = src[one_rect.top():one_rect.bottom(), one_rect.left():one_rect.right()]
-      #cv2.imwrite("tmp/" + line[2] + ".jpg", roi)
+      roi = src[one_rect.top():one_rect.bottom(), one_rect.left():one_rect.right()]
+      cv2.imwrite("tmp/images/" + line[2] + ".jpg", roi)
 
       for i in range(sample_number):  
         sample = TrainSample()
@@ -147,7 +152,7 @@ def gen_sample_list(line_list, sample_number):
 
 biwi_sample_file = "tmp/glasses_tinted.npz"
 if not os.path.exists(biwi_sample_file):
-  sample_number = 5
+  sample_number = 10
   sample_list = gen_sample_list(line_list, sample_number)
   np.savez(biwi_sample_file,sample_list=sample_list)
 

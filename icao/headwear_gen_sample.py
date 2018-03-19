@@ -35,7 +35,9 @@ none_smile_file_list = [
   "D:/sandbox/utility/tfcode/icao/data/headwear/non_headwear.txt",
   "D:/sandbox/utility/tfcode/icao/data/headwear/non_headwear2.txt",
   "D:/sandbox/utility/tfcode/icao/data/headwear/non_headwear3.txt",
-  "D:/sandbox/utility/tfcode/icao/data/headwear/non_headwear4.txt"]
+  "D:/sandbox/utility/tfcode/icao/data/headwear/non_headwear4.txt",
+  "D:/sandbox/utility/tfcode/icao/data/headwear/non_headwear5.txt",
+  "D:/sandbox/utility/tfcode/icao/data/headwear/non_headwear6.txt"]
 
 def append_file(line_list, file_list, label):
   file_idx = 0

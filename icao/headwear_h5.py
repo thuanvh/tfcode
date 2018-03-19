@@ -11,6 +11,7 @@ import sys
 #import thread
 import threading
 import argparse
+import math
 
 from data_sample import TrainSample
 
@@ -115,10 +116,22 @@ def sample_gen(rangename,start_idx, end_idx):
         src = cv2.imread(sample.img_path)
 
         pt2d = sample.face_pts
+        
+        ### Eyerotation
+        leftx, lefty = np.mean(pt2d[36:42], axis=0)
+        rightx, righty = np.mean(pt2d[42:48], axis=0)
+        cx = (leftx + rightx) * 0.5
+        cy = (lefty + righty) * 0.5
+        angle = math.atan2(righty - lefty, rightx - leftx) * 180 / math.pi
+        M = cv2.getRotationMatrix2D((cx,cy), angle, 1)
+        img = cv2.warpAffine(src, M, (src.shape[1], src.shape[0]))        
+        pt2d1 = np.c_[pt2d, np.ones(len(pt2d))]
+        pt2d = np.dot(pt2d1,M.transpose())        
+
         cx, cy = np.mean(pt2d, axis=0)
         #rotation
         M = cv2.getRotationMatrix2D((cx,cy), sample.rot, 1)
-        img = cv2.warpAffine(src, M, (src.shape[1], src.shape[0]))        
+        img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))        
         pt2d1 = np.c_[pt2d, np.ones(len(pt2d))]
         pt2d = np.dot(pt2d1,M.transpose())        
         #write_sample(img, pt2d, prefix + "_rotation" + ".jpg")
@@ -130,6 +143,7 @@ def sample_gen(rangename,start_idx, end_idx):
         x_max = max(pt2d[pt_range,0])
         y_max = max(pt2d[pt_range,1])
         w = x_max - x_min
+        
         h = y_max - y_min
         y_min -= h
         y_max -= h/2

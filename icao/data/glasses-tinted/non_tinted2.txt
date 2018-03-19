@@ -66,7 +66,6 @@ D:\\sandbox\\images\\glasses\\yalefaces\\glasses\202516196_1_helen_train.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\20315024_2_helen_train.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\2070634156_1_helen_train.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\2099071245_1_helen_train.jpg
-D:\\sandbox\\images\\glasses\\yalefaces\\glasses\2135034002_1_helen_train.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\21582960_1_helen_train.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\2223862191_1_helen_train.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\2251201726_1_helen_train.jpg
@@ -328,11 +327,9 @@ D:\\sandbox\\images\\glasses\\yalefaces\\glasses\image_0489_lfpw_train.png
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\image_0540_lfpw_train.png
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\image_0644_lfpw_train.png
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\image_0672_lfpw_train.png
-D:\\sandbox\\images\\glasses\\yalefaces\\glasses\image_0772_lfpw_train.png
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\image_0868_lfpw_train.png
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\khchan.1.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\khchan.10.jpg
-D:\\sandbox\\images\\glasses\\yalefaces\\glasses\khchan.11.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\khchan.12.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\khchan.13.jpg
 D:\\sandbox\\images\\glasses\\yalefaces\\glasses\khchan.14.jpg
