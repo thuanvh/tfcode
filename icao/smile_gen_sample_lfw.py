@@ -122,7 +122,7 @@ def gen_sample_list(line_list, sample_number):
     label = line[1]
 
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    rects = detector(gray, 1)
+    rects = detector(gray, 0)
     
     imgcx = src.shape[1] / 2
     imgcy = src.shape[0] / 2
@@ -142,7 +142,7 @@ def gen_sample_list(line_list, sample_number):
       pt2d = shape_to_np(pt2d)
       #print(pose)
       roi = src[one_rect.top():one_rect.bottom(), one_rect.left():one_rect.right()]
-      cv2.imwrite("tmp/" + line[2] + ".jpg", roi)
+      cv2.imwrite("tmp/images/smile/" + line[2] + ".jpg", roi)
 
       for i in range(sample_number):  
         sample = TrainSample()
@@ -174,13 +174,13 @@ def gen_sample_list(line_list, sample_number):
   return sample_list
 
 
-biwi_sample_file = "tmp/lfw_sample_list.npz"
+biwi_sample_file = "tmp/smile_lfw_sample_list.npz"
 if not os.path.exists(biwi_sample_file):
   sample_number = 30
   sample_list = gen_sample_list(line_list, sample_number)
   np.savez(biwi_sample_file,sample_list=sample_list)
 
-test_sample_file = "tmp/test_smile.npz"
+test_sample_file = "tmp/smile_test_smile.npz"
 if not os.path.exists(test_sample_file):
   test_sample_list = gen_sample_list(test_line_list, 1)
   np.savez(test_sample_file,sample_list=test_sample_list)

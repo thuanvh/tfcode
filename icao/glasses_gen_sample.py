@@ -39,7 +39,8 @@ glassestinted_file_list = [
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-7.txt",
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-8.txt",
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-9.txt",
-  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-10.txt"]
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-10.txt",
+  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-11.txt"]
 none_glassestinted_file_list = [
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted.txt",
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted2.txt",
@@ -75,10 +76,12 @@ dlib_data = "D:/sandbox/vmakeup/VirtualMakeover/Binaries/Bin/shape_predictor_68_
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(dlib_data)
 
-def gen_sample_list(line_list, sample_number):
+def gen_sample_list(line_list, sample_number, name, startIdx, endIdx):
   file_idx = 0
   sample_list=[]
-  for line in line_list:
+  #slice_list = line_list
+  for lineidx in range(startIdx, endIdx):
+    line = line_list[lineidx]
     filepath = line[0]
     #print(line, filepath)
 
@@ -160,3 +163,24 @@ if not os.path.exists(biwi_sample_file):
 # if not os.path.exists(test_sample_file):
 #   test_sample_list = gen_sample_list(test_line_list, 1)
 #   np.savez(test_sample_file,sample_list=test_sample_list)
+
+class myThread(threading.Thread):
+    def __init__(self, threadID, name, input_list, startIdx, endIdx, sample_number, output_list):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.startIdx = startIdx
+        self.endIdx = endIdx
+        self.name = name
+        self.output_list = output_list
+        self.input_list = input_list
+        self.sample_number = sample_number
+    def run(self):
+        print("starting", self.name, self.startIdx, self.endIdx)
+        self.output_list = gen_sample_list(self.input_list, self.sample_number, self.name, self.startIdx, self.endIdx)
+        print("exiting", self.name)
+
+thread_num = 8
+data_size=int(len(line_list)/thread_num)
+for tid in range(thread_num):
+    t = myThread(tid,"a"+str(tid), data_size * tid, data_size * (tid+1))
+    t.start()

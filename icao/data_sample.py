@@ -11,3 +11,5 @@ class TrainSample:
   box=[]#xmin,xmax,ymin,ymax
   rot = 0
   label = 0
+  haze = 0
+

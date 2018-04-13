@@ -99,7 +99,10 @@ inputsize =  FLAGS.size #40
 height = inputsize #100
 width = inputsize #100
 base_name = os.path.basename(sample_list_file)[:-4]
-output_folder = "D:/sandbox/vmakeup/repos/src/learncnn/model_face/model29_headpose/_data/headpose_" + str(inputsize) + "_" + str(base_name) + "/"
+output_folder = "D:/sandbox/vmakeup/src/learncnn/model_face/model29_headpose/_data/headpose_" + str(inputsize) + "_" + str(base_name) + "/"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+print(output_folder)
 if FLAGS.combineall == 0 :
     h5_name = ["yaw_cont", "pitch_cont", "roll_cont", "yaw_bin", "pitch_bin", "roll_bin"]
 else:
