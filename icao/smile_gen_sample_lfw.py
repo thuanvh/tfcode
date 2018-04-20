@@ -27,34 +27,43 @@ def shape_to_np(shape, dtype="int"):
 	# return the list of (x, y)-coordinates
   return coords
 
-dataset_folder = "C:/Users/Thuan/Downloads/dataset-for-smile-detection-from-face-images"
-lfw_none_smile_file = dataset_folder + "//" + "NON-SMILE_list.txt"
-lfw_smile_file = dataset_folder + "//" + "SMILE_list.txt"
-image_folder = "C:/Users/Thuan/Downloads/lfw/lfw"
-line_list = []
-line_idx = 0
-with open(lfw_none_smile_file, "r") as ins:
-  for line in ins:
-    fname = line.rstrip("\n ")
-    line_idx += 1
-    if fname != "":
-      name = fname[:-9]
-      filepath = image_folder + "/" + name + "/" + fname
-      line_list.append((filepath, 0, "non_smile_lfw_" + str(line_idx)))
-line_idx = 0
-with open(lfw_smile_file, "r") as ins:
-  for line in ins:
-    fname = line.rstrip("\n ")
-    line_idx += 1
-    if fname != "":
-      name = fname[:-9]
-      filepath = image_folder + "/" + name + "/" + fname
-      line_list.append((filepath, 1, "smile_lfw_" + str(line_idx)))
+# dataset_folder = "C:/Users/Thuan/Downloads/dataset-for-smile-detection-from-face-images"
+# lfw_none_smile_file = dataset_folder + "//" + "NON-SMILE_list.txt"
+# lfw_smile_file = dataset_folder + "//" + "SMILE_list.txt"
+# image_folder = "C:/Users/Thuan/Downloads/lfw/lfw"
+# line_list = []
+#line_idx = 0
+# fsmile=open("data/smile/smile_3.txt","w")
+# fnon_smile=open("data/smile/non_smile_3.txt","w")
+# with open(lfw_none_smile_file, "r") as ins:
+#   for line in ins:
+#     fname = line.rstrip("\n ")
+#     line_idx += 1
+#     if fname != "":
+#       name = fname[:-9]
+#       filepath = image_folder + "/" + name + "/" + fname
+#       #line_list.append((filepath, 0, "non_smile_lfw_" + str(line_idx)))
+#       fnon_smile.write(filepath+"\n")
+# line_idx = 0
+# with open(lfw_smile_file, "r") as ins:
+#   for line in ins:
+#     fname = line.rstrip("\n ")
+#     line_idx += 1
+#     if fname != "":
+#       name = fname[:-9]
+#       filepath = image_folder + "/" + name + "/" + fname
+#       fsmile.write(filepath+"\n")
+#       #line_list.append((filepath, 1, "smile_lfw_" + str(line_idx)))
+
+# exit(1)
 
 smile_file_list = ["D:/sandbox/utility/tfcode/icao/data/smile/smile_1.txt",
-  "D:/sandbox/utility/tfcode/icao/data/smile/smile_2.txt"]
+  "D:/sandbox/utility/tfcode/icao/data/smile/smile_2.txt",
+  "D:/sandbox/utility/tfcode/icao/data/smile/smile_3.txt"]
 none_smile_file_list = ["D:/sandbox/utility/tfcode/icao/data/smile/non_smile_1.txt",
-  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_2.txt"]
+  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_2.txt",
+  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_3.txt",
+  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_4.txt"]
 # file_idx = 0
 # for smile_file in smile_file_list:
 #   file_idx += 1
@@ -76,6 +85,7 @@ none_smile_file_list = ["D:/sandbox/utility/tfcode/icao/data/smile/non_smile_1.t
 #       if filepath != "":
 #         line_list.append((filepath, 0, "non_smile_" + str(file_idx) + "_" + str(line_idx)))
 
+
 def append_file(line_list, file_list, label):
   file_idx = 0
   prefix = "non_smile" if label == 0 else "smile"
@@ -88,6 +98,8 @@ def append_file(line_list, file_list, label):
         line_idx += 1
         if filepath != "":
           line_list.append((filepath, label, prefix + "_" + str(file_idx) + "_" + str(line_idx)))
+
+line_list = []
 append_file(line_list, smile_file_list, 1)
 append_file(line_list, none_smile_file_list, 0)
 
@@ -116,7 +128,7 @@ def gen_sample_list(line_list, sample_number):
     if src is None or src.shape[0] == 0 or src.shape[1] == 0:
       print("Error in reading image", filepath)
       print(line)
-      print(name)
+      #print(name)
       continue
     
     label = line[1]
@@ -163,7 +175,7 @@ def gen_sample_list(line_list, sample_number):
           for i in range(k):
             sample.trans[idx_array[i]] = np.random.random_sample()
 
-        sample.alpha = 1.0 + 0.1 * np.random.random_sample() - 0.05
+        sample.alpha = 1.0 + 0.2 * np.random.random_sample() - 0.1
         sample.beta = 10 * np.random.random_sample()
         if i == 0 :
           sample.rot = 0.0 

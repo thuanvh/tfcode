@@ -12,7 +12,6 @@ import sys
 import threading
 import argparse
 import math
-
 from data_sample import TrainSample
 
 def create_h5_file(folder,train_file_idx, sample_per_file, sample_shape, label_len):
@@ -76,7 +75,7 @@ inputsize =  FLAGS.size #40
 height = inputsize #100
 width = inputsize #100
 base_name = os.path.basename(sample_list_file)[:-4]
-output_folder = "D:/sandbox/vmakeup/src/learncnn/model_face/model29_headpose/_data/smile_" + str(inputsize) + "_" + str(base_name) + "/"
+output_folder = "D:/sandbox/vmakeup/src/learncnn/model_face/model29_headpose/_data/gaze_real_right_" + str(inputsize) + "_" + str(base_name) + "/"
 h5_name = ["combine"]
 for i in range(len(h5_name)):
     h5_name[i] = output_folder + h5_name[i]    
@@ -102,6 +101,28 @@ def write_sample(img, pts, name):
     cv2.circle(drawing, (int(pt[0]),int(pt[1])), 3, (0,0,255), -1)
   cv2.imwrite(name, drawing)
 
+def box_img(img, pt2d, pt_range, extends, trans):
+    #pt_range = slice(36, 48)
+    x_min = min(pt2d[pt_range,0])
+    y_min = min(pt2d[pt_range,1])
+    x_max = max(pt2d[pt_range,0])
+    y_max = max(pt2d[pt_range,1])
+    w = x_max - x_min
+    h = y_max - y_min
+    #write_sample(img[int(y_min):int(y_max),int(x_min):int(x_max)], pt2d, prefix + "_eye" + ".jpg")
+
+    #print(sample.trans)
+    dx = w * extends[0] #0.2
+    dy = h * extends[1] #0.2
+    x_min -= dx * trans[0]
+    x_max += dx * trans[1]
+    y_min -= dy * trans[2]
+    y_max += dy * trans[3]
+    w = x_max - x_min
+    h = y_max - y_min
+
+    return (int(x_min), int(x_max), int(y_min), int(y_max))
+
 def sample_gen(rangename,start_idx, end_idx):
     channel = 3
     data_h5=[]
@@ -116,7 +137,7 @@ def sample_gen(rangename,start_idx, end_idx):
         src = cv2.imread(sample.img_path)
 
         pt2d = sample.face_pts
-
+        
         leftx, lefty = np.mean(pt2d[36:42], axis=0)
         rightx, righty = np.mean(pt2d[42:48], axis=0)
         cx = (leftx + rightx) * 0.5
@@ -127,58 +148,14 @@ def sample_gen(rangename,start_idx, end_idx):
         pt2d1 = np.c_[pt2d, np.ones(len(pt2d))]
         pt2d = np.dot(pt2d1,M.transpose())
 
-        # cx, cy = np.mean(pt2d, axis=0)
         # #rotation
-        # M = cv2.getRotationMatrix2D((cx,cy), sample.rot, 1)
-        # img = cv2.warpAffine(src, M, (src.shape[1], src.shape[0]))        
-        # pt2d1 = np.c_[pt2d, np.ones(len(pt2d))]
-        # pt2d = np.dot(pt2d1,M.transpose())        
-        # #write_sample(img, pt2d, prefix + "_rotation" + ".jpg")
+        cx, cy = np.mean(pt2d[42:48], axis=0)
+        M = cv2.getRotationMatrix2D((cx,cy), sample.rot, 1)
+        img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))        
+        pt2d1 = np.c_[pt2d, np.ones(len(pt2d))]
+        pt2d = np.dot(pt2d1,M.transpose())        
+        #write_sample(img, pt2d, prefix + "_rotation" + ".jpg")
 
-        #translation
-        ptmouth=np.concatenate((pt2d[31:36],pt2d[48:68]),axis=0)
-        x_min = min(ptmouth[:,0])
-        y_min = min(ptmouth[:,1])
-        x_max = max(ptmouth[:,0])
-        y_max = max(ptmouth[:,1])
-        w = x_max - x_min
-        h = y_max - y_min
-        
-        #print(sample.trans)
-        dx = w * 0.1
-        dy = h * 0.1
-        x_min -= dx * sample.trans[0]
-        x_max += dx * sample.trans[1]
-        y_min -= dy * sample.trans[2]
-        y_max += dy * sample.trans[3]
-        w = x_max - x_min
-        h = y_max - y_min
-        cx = int((x_max + x_min) * 0.5)
-        cy = int((y_max + y_min) * 0.5)
-
-        h = w = max(w,h)
-        h2 = int(h/2)
-        x_min = cx - h2
-        x_max = cx + h2
-        y_min = cy - h2
-        y_max = cy + h2
-
-        left = top = bottom = right = 0
-        if x_min < 0 : left = -x_min        
-        if y_min < 0 : top = -y_min
-        if x_max > img.shape[1] : right = x_max - img.shape[1]
-        if y_max > img.shape[0] : bottom = y_max - img.shape[0]
-        img = cv2.copyMakeBorder(img, top=top, bottom=bottom, left=left, right=right, borderType= cv2.BORDER_CONSTANT, value=[0,0,0] )
-        y_min+=top
-        y_max+=top
-        x_min+=left
-        x_max+=left
-        img = img[y_min:y_max, x_min:x_max]
-        for p in pt2d:
-          p[0] = p[0] + left - x_min
-          p[1] = p[1] + top - y_min
-        #write_sample(img, pt2d, prefix + "_translation" + ".jpg")
-        
         #Flip
         if sample.flip:
           img = cv2.flip(img,1)
@@ -210,7 +187,70 @@ def sample_gen(rangename,start_idx, end_idx):
           for i in range(len(fromidx)):
             pt2d_flip[fromidx[i]-1] = pt2d[toidx[i]-1]
           pt2d = pt2d_flip.copy()
-          #write_sample(img, pt2d, prefix + "_flip" + ".jpg")
+        #write_sample(img, pt2d, prefix + "_flip" + ".jpg")
+
+        #translation
+        #pt_range = slice(36, 42)
+        #if sample.flip:
+        #    pt_range = slice(42, 48)
+        pt_range = slice(42, 48)
+        x_min = min(pt2d[pt_range,0])
+        y_min = min(pt2d[pt_range,1])
+        x_max = max(pt2d[pt_range,0])
+        y_max = max(pt2d[pt_range,1])
+        x_min -= (x_max - x_min) * 0.1
+        w = x_max - x_min
+        h = y_max - y_min
+        cx = int((x_max + x_min) * 0.5)
+        cy = int((y_max + y_min) * 0.5)
+
+        h = w = max(w,h)
+        h2 = int(h/2)
+        w2 = int(w/2)
+        x_min = cx - w2
+        x_max = cx + w2
+        y_min = cy - h2
+        y_max = cy + h2
+        #write_sample(img[int(y_min):int(y_max),int(x_min):int(x_max)], pt2d, prefix + "_eye" + ".jpg")
+
+        #print(sample.trans)
+        dmax = max(w,h)
+        dx = dmax * 0.2
+        dy = dmax * 0.3
+        x_min -= dx * sample.trans[0]
+        x_max += dx * sample.trans[1]
+        y_min -= dy * sample.trans[2]
+        y_max += dy * sample.trans[3]
+        w = x_max - x_min
+        h = y_max - y_min
+        cx = int((x_max + x_min) * 0.5)
+        cy = int((y_max + y_min) * 0.5)
+
+        h = w = max(w,h)
+        h2 = int(h/2)
+        w2 = int(w/2)
+        x_min = cx - w2
+        x_max = cx + w2
+        y_min = cy - h2
+        y_max = cy + h2
+
+        left = top = bottom = right = 0
+        if x_min < 0 : left = -x_min        
+        if y_min < 0 : top = -y_min
+        if x_max > img.shape[1] : right = x_max - img.shape[1]
+        if y_max > img.shape[0] : bottom = y_max - img.shape[0]
+        img = cv2.copyMakeBorder(img, top=top, bottom=bottom, left=left, right=right, borderType= cv2.BORDER_CONSTANT, value=[0,0,0] )
+        y_min+=top
+        y_max+=top
+        x_min+=left
+        x_max+=left
+        img = img[y_min:y_max, x_min:x_max]
+        for p in pt2d:
+          p[0] = p[0] + left - x_min
+          p[1] = p[1] + top - y_min
+        #write_sample(img, pt2d, prefix + "_translation" + ".jpg")
+        
+        
 
         #Blur
         if sample.blur:
@@ -218,12 +258,23 @@ def sample_gen(rangename,start_idx, end_idx):
             #cv2.imwrite(prefix + "_blur.jpg", img)    
         img = cv2.add(cv2.multiply(img, np.array([sample.alpha])), np.array([sample.beta]))
         
+        # pt_range_left = slice(36, 42)
+        # pt_range_right = slice(42, 48)
+        # box_l = box_img(img, pt2d, pt_range_left, [0.2, 0.5], sample.trans)
+        # box_r = box_img(img, pt2d, pt_range_right, [0.2, 0.5], sample.trans)
+        # leftpart = img[box_l[2]:box_l[3], box_l[0]:box_l[1]]
+        # rightpart = img[box_r[2]:box_r[3], box_r[0]:box_r[1]]
+        # rightpart = cv2.flip(rightpart, 1)
+        # leftpart = cv2.resize(leftpart, (int(height/2), width))
+        # rightpart = cv2.resize(rightpart, (int(height/2), width))
+        # img = np.concatenate((leftpart,rightpart), axis=0)
+
         for p in pt2d:
           p[0] = p[0] / img.shape[1]
           p[1] = p[1] / img.shape[0]
         #print(pt2d)
         img = cv2.resize(img, (width, height)).astype(np.float32)
-        cv2.imwrite(prefix + "_final.jpg", img)  
+        #cv2.imwrite(prefix + "_translation" + ".jpg", img)
         img *= 2/255.0
         img -= 1
         
