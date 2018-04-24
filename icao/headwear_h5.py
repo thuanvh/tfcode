@@ -146,11 +146,20 @@ def sample_gen(rangename,start_idx, end_idx):
         
         h = y_max - y_min
         y_min -= h
-        y_max -= h/2
+        #y_max -= h/2
+        h = y_max - y_min
         
         #print(sample.trans)
-        dx = w * 0.3
-        dy = h * 0.3
+        h = w = max(w,h)
+        h2 = int(h/2)
+        w2 = int(w/2)
+        x_min = cx - w2
+        x_max = cx + w2
+        y_min = cy - h2
+        y_max = cy + h2
+
+        dx = w * 0.1
+        dy = h * 0.1
         x_min -= dx * sample.trans[0]
         x_max += dx * sample.trans[1]
         y_min -= dy * sample.trans[2]
@@ -228,7 +237,8 @@ def sample_gen(rangename,start_idx, end_idx):
           p[1] = p[1] / img.shape[0]
         #print(pt2d)
         img = cv2.resize(img, (width, height)).astype(np.float32)
-        #cv2.imwrite(prefix + "_translation" + ".jpg", img)
+        cv2.imwrite(prefix + "_translation" + ".jpg", img)
+
         img *= 2/255.0
         img -= 1
         

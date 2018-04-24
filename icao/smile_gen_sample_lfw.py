@@ -63,7 +63,9 @@ smile_file_list = ["D:/sandbox/utility/tfcode/icao/data/smile/smile_1.txt",
 none_smile_file_list = ["D:/sandbox/utility/tfcode/icao/data/smile/non_smile_1.txt",
   "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_2.txt",
   "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_3.txt",
-  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_4.txt"]
+  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_4.txt",
+  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_5.txt",
+  "D:/sandbox/utility/tfcode/icao/data/smile/non_smile_6.txt"]
 # file_idx = 0
 # for smile_file in smile_file_list:
 #   file_idx += 1

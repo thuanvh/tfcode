@@ -33,7 +33,6 @@ D:\sandbox\vmakeup\src\images\test5\130-12.jpg
 D:\sandbox\vmakeup\src\images\test5\131-12.jpg
 D:\sandbox\vmakeup\src\images\test5\13-12.jpg
 D:\sandbox\vmakeup\src\images\test5\132-12.jpg
-D:\sandbox\vmakeup\src\images\test5\133-12.jpg
 D:\sandbox\vmakeup\src\images\test5\134-12.jpg
 D:\sandbox\vmakeup\src\images\test5\135-12.jpg
 D:\sandbox\vmakeup\src\images\test5\136-12.jpg
@@ -42,7 +41,6 @@ D:\sandbox\vmakeup\src\images\test5\138-12.jpg
 D:\sandbox\vmakeup\src\images\test5\139-12.jpg
 D:\sandbox\vmakeup\src\images\test5\140-12.jpg
 D:\sandbox\vmakeup\src\images\test5\141-12.jpg
-D:\sandbox\vmakeup\src\images\test5\14-12.jpg
 D:\sandbox\vmakeup\src\images\test5\142-12.jpg
 D:\sandbox\vmakeup\src\images\test5\143-12.jpg
 D:\sandbox\vmakeup\src\images\test5\144-12.jpg
@@ -115,13 +113,10 @@ D:\sandbox\vmakeup\src\images\test5\27-12.jpg
 D:\sandbox\vmakeup\src\images\test5\28-12.jpg
 D:\sandbox\vmakeup\src\images\test5\29-12.jpg
 D:\sandbox\vmakeup\src\images\test5\30-12.jpg
-D:\sandbox\vmakeup\src\images\test5\31-12.jpg
 D:\sandbox\vmakeup\src\images\test5\32-12.jpg
-D:\sandbox\vmakeup\src\images\test5\33-12.jpg
 D:\sandbox\vmakeup\src\images\test5\34-12.jpg
 D:\sandbox\vmakeup\src\images\test5\35-12.jpg
 D:\sandbox\vmakeup\src\images\test5\36-12.jpg
-D:\sandbox\vmakeup\src\images\test5\37-12.jpg
 D:\sandbox\vmakeup\src\images\test5\38-12.jpg
 D:\sandbox\vmakeup\src\images\test5\39-12.jpg
 D:\sandbox\vmakeup\src\images\test5\40-12.jpg

@@ -205,8 +205,6 @@ class H5DataList:
 
 import tensorflow.contrib.slim as slim
 
-
-# SqueezeNet from https://github.com/davidsandberg/facenet/blob/master/src/models/squeezenet.py
 def fire_module(inputs,
                 squeeze_depth,
                 expand_depth,
@@ -323,29 +321,29 @@ def train():
   num_classes = 2
   keep_prob = tf.placeholder_with_default(1.0, None) #tf.float32)
 
-  net = slim.conv2d(x, 96, [3, 3], stride=1, scope='conv1')
+  net = slim.conv2d(x, 48, [3, 3], stride=1, scope='conv1')
   print(net.get_shape())
   net = slim.max_pool2d(net, [3, 3], stride=2, scope='maxpool1')
   print(net.get_shape())
-  net = fire_module(net, 16, 64, scope='fire2')
+  net = fire_module(net, 8, 16, scope='fire2')
   print(net.get_shape())
-  net = fire_module(net, 16, 64, scope='fire3')
+  net = fire_module(net, 8, 16, scope='fire3')
   print(net.get_shape())
-  net = fire_module(net, 32, 128, scope='fire4')
+  net = fire_module(net, 16, 32, scope='fire4')
   print(net.get_shape())
   net = slim.max_pool2d(net, [2, 2], stride=2, scope='maxpool4')
   print(net.get_shape())
-  net = fire_module(net, 32, 128, scope='fire5')
+  net = fire_module(net, 16, 32, scope='fire5')
   print(net.get_shape())
-  net = fire_module(net, 48, 192, scope='fire6')
+  net = fire_module(net, 24, 48, scope='fire6')
   print(net.get_shape())
-  net = fire_module(net, 48, 192, scope='fire7')
+  net = fire_module(net, 24, 48, scope='fire7')
   print(net.get_shape())
-  net = fire_module(net, 64, 256, scope='fire8')
+  net = fire_module(net, 32, 64, scope='fire8')
   print(net.get_shape())
   net = slim.max_pool2d(net, [3, 3], stride=2, scope='maxpool8')
   print(net.get_shape())
-  net = fire_module(net, 64, 256, scope='fire9')
+  net = fire_module(net, 32, 64, scope='fire9')
   print(net.get_shape())
   net = slim.dropout(net, keep_prob)
   print(net.get_shape())

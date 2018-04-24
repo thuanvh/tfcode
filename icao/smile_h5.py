@@ -145,8 +145,8 @@ def sample_gen(rangename,start_idx, end_idx):
         h = y_max - y_min
         
         #print(sample.trans)
-        dx = w * 0.1
-        dy = h * 0.1
+        dx = w * 0.3
+        dy = h * 0.3
         x_min -= dx * sample.trans[0]
         x_max += dx * sample.trans[1]
         y_min -= dy * sample.trans[2]

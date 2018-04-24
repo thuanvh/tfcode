@@ -10,12 +10,9 @@ D:\sandbox\vmakeup\src\images\test9\138.jpg
 D:\sandbox\vmakeup\src\images\test9\140.jpg
 D:\sandbox\vmakeup\src\images\test9\147.jpg
 D:\sandbox\vmakeup\src\images\test9\148.jpg
-D:\sandbox\vmakeup\src\images\test9\156.jpg
-D:\sandbox\vmakeup\src\images\test9\158.jpg
 D:\sandbox\vmakeup\src\images\test9\164.jpg
 D:\sandbox\vmakeup\src\images\test9\167.jpg
 D:\sandbox\vmakeup\src\images\test9\17.jpg
-D:\sandbox\vmakeup\src\images\test9\181.jpg
 D:\sandbox\vmakeup\src\images\test9\192.jpg
 D:\sandbox\vmakeup\src\images\test9\193.jpg
 D:\sandbox\vmakeup\src\images\test9\204.jpg

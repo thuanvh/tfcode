@@ -10,8 +10,8 @@ def readfileresult(icao_file, store_dict, label):
 
 icao_file="D:/sandbox/images/PhotoDatabaseValid/valid.txt"
 not_icao_file="D:/sandbox/images/PhotoDatabaseValid/invalid.txt"
-detect_icaofile="D:/sandbox/vmakeup/VirtualMakeover/Binaries/Bin/icao_all/valid_glasses.txt"
-detect_not_icaofile="D:/sandbox/vmakeup/VirtualMakeover/Binaries/Bin/icao_all/invalid_glasses.txt"
+detect_icaofile="D:/sandbox/vmakeup/VirtualMakeover/Binaries/Bin/icao_all/valid_all.txt"
+detect_not_icaofile="D:/sandbox/vmakeup/VirtualMakeover/Binaries/Bin/icao_all/invalid_all.txt"
 
 truth_dict = dict()
 readfileresult(icao_file, truth_dict, 1)
