@@ -38,6 +38,14 @@ import h5py
 
 FLAGS = None
 
+import tensorflow.contrib.slim as slim
+
+import sys,os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/common')
+
+from h5data import H5DataList
+from squeeze import fire_module
+
 # create a slice object from a string
 def get_slice_obj(slicearg):
     #slice_ints = tuple([ int(n) for n in slicearg.split(':') ])
@@ -220,6 +228,71 @@ def cnn_model_fn_40(x):
   #logits = tf.layers.dense(inputs=dense, units=32)
   return logits, keep_prob
 
+def cnn_model_squeeze_40(x):
+  # """Model function for CNN."""    
+  # conv1 = tf.layers.conv2d(inputs=x,filters=20,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  # pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+  # conv2 = tf.layers.conv2d(inputs=pool1,filters=40,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  # pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+  # conv3 = tf.layers.conv2d(inputs=pool2,filters=60,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  # pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
+  # conv4 = tf.layers.conv2d(inputs=pool3,filters=80,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  # pool4 = tf.layers.max_pooling2d(inputs=conv4, pool_size=[2, 2], strides=2)
+  # conv5 = tf.layers.conv2d(inputs=pool4,filters=100,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  # pool5 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], strides=2)
+  # pool4_flat = tf.reshape(pool5, [-1, 1 * 1 * 100])
+  # dense = tf.layers.dense(inputs=pool4_flat, units=1024, activation=tf.nn.relu)
+  # keep_prob = tf.placeholder_with_default(1.0, None) #tf.float32)
+  # dropout = tf.layers.dropout(inputs=dense, rate=keep_prob)
+  # logits = tf.layers.dense(inputs=dropout, units=1, name="logits")
+  # #logits = tf.layers.dense(inputs=dense, units=32)
+
+  net = slim.conv2d(x, 48, [3, 3], stride=1, scope='conv1')
+  print(net.get_shape())
+  net = slim.max_pool2d(net, [3, 3], stride=2, scope='maxpool1')
+  print(net.get_shape())
+  net = fire_module(net, 8, 16, scope='fire2')
+  print(net.get_shape())
+  net = fire_module(net, 8, 16, scope='fire3')
+  print(net.get_shape())
+  net = fire_module(net, 16, 32, scope='fire4')
+  print(net.get_shape())
+  net = slim.max_pool2d(net, [2, 2], stride=2, scope='maxpool4')
+  print(net.get_shape())
+  net = fire_module(net, 16, 32, scope='fire5')
+  print(net.get_shape())
+  net = fire_module(net, 24, 48, scope='fire6')
+  print(net.get_shape())
+  net = fire_module(net, 24, 48, scope='fire7')
+  print(net.get_shape())
+  net = fire_module(net, 32, 64, scope='fire8')
+  print(net.get_shape())
+  net = slim.max_pool2d(net, [3, 3], stride=2, scope='maxpool8')
+  print(net.get_shape())
+  net = fire_module(net, 32, 64, scope='fire9')
+  print(net.get_shape())
+  net = slim.max_pool2d(net, [3, 3], stride=2, scope='maxpool10')
+  print(net.get_shape())
+
+  pool4_flat = tf.reshape(net, [-1, 1 * 1 * 128])
+  dense = tf.layers.dense(inputs=pool4_flat, units=512, activation=tf.nn.relu)
+  keep_prob = tf.placeholder_with_default(1.0, None) #tf.float32)
+  dropout = tf.layers.dropout(inputs=dense, rate=keep_prob)
+  logits = tf.layers.dense(inputs=dropout, units=1, name="logits")
+
+  #keep_prob = tf.placeholder_with_default(1.0, None) #tf.float32)
+  #net = slim.dropout(net, keep_prob)
+  #print(net.get_shape())
+  # net = slim.conv2d(net, 1, [1, 1], activation_fn=None, normalizer_fn=None, scope='conv10')
+  # print(net.get_shape())
+  # net = slim.avg_pool2d(net, net.get_shape()[1:3], scope='avgpool10')
+  # print(net.get_shape())
+  # net = tf.squeeze(net, [1, 2], name='squeeze11')
+  # print(net.get_shape())
+  #logits = tf.layers.dense(inputs=net, units=1, name="logits")
+
+  return logits, keep_prob
+
 def cnn_model_bin_fn_40(x, binsize):
   """Model function for CNN."""    
   conv1 = tf.layers.conv2d(inputs=x,filters=20,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
@@ -240,15 +313,15 @@ def cnn_model_bin_fn_40(x, binsize):
   #logits = tf.layers.dense(inputs=dense, units=32)
   return logits, keep_prob
 
-def cnn_model_fn(x, input_size, is_bin, bins):
-  if not is_bin:
-    if input_size == 40:
-      return cnn_model_fn_40(x)
-    elif input_size == 100:
-      return cnn_model_fn_100(x)
-  else:
-    if input_size == 40:
-      return cnn_model_bin_fn_40(x, len(bins))
+def cnn_model_fn(x, model_name, bins):
+  if model_name == "model40":
+    return cnn_model_fn_40(x)
+  elif model_name == "model40squeeze":
+    return cnn_model_squeeze_40(x)
+  elif model_name == "model100":
+    return cnn_model_fn_100(x)
+  elif model_name == "model40bin":
+    return cnn_model_bin_fn_40(x, len(bins))
 
   
 def conv2d(x, W):
@@ -273,47 +346,7 @@ def bias_variable(shape):
   initial = tf.constant(0.1, shape=shape)
   return tf.Variable(initial)
 
-class H5DataList:
-  def __init__(self, listfilename, batch_size, label_slice=slice(1)):
-    #threading.Thread.__init__(self)
-    with open(listfilename) as f: self.file_list = [line.rstrip('\n') for line in f]
-    self.file_idx = 0
-    self.batch_size = batch_size
-    self.cur_data = []
-    self.cur_label = []
-    self.cur_idx = 0
-    self.y_slice = label_slice
-  def get_next_batch(self):
-    batch_x = []
-    batch_y = []
-    while len(batch_x) < self.batch_size :
-      if len(self.cur_data) == self.cur_idx :
-        self.file_idx += 1
-        if self.file_idx >= len(self.file_list) : self.file_idx = 0        
-        #print("Reading", self.file_list[self.file_idx])
-        f = h5py.File(self.file_list[self.file_idx],'r')
-        data = f.get('data')
-        self.cur_data = np.array(data)
-        # Swapaxes for caffe h5
-        #self.cur_data = np.swapaxes(np.swapaxes(self.cur_data, 1, 2), 2, 3)
-        #img = self.cur_data[0]
-        label = f.get('label')
-        self.cur_label = np.array(label)
-        self.cur_idx = 0
-      start = self.cur_idx
-      end = min(self.cur_idx + self.batch_size - len(batch_x), len(self.cur_data))
-      #print("Get data from", start, end)
-      if len(batch_x) == 0:
-        batch_x = self.cur_data[start:end,:]
-        batch_y = self.cur_label[start:end,self.y_slice]
-      else:
-        #print("Append batch")
-        batch_x = np.concatenate((batch_x,self.cur_data[start:end,:]),axis=0)
-        batch_y = np.concatenate((batch_y,self.cur_label[start:end,self.y_slice]),axis=0)
-      self.cur_idx = end
-    return batch_x, batch_y
 
-      
 
 def main(_):
   bins = np.array(range(-99, 102, 3))
@@ -340,7 +373,8 @@ def main(_):
 
   # Build the graph for the deep net
   #y_conv = deepnn(x)
-  y_conv, keep_prob = cnn_model_fn(x, input_size, is_binned_label, bins)
+  model_name = FLAGS.model_name
+  y_conv, keep_prob = cnn_model_fn(x, model_name, bins)
 
   with tf.name_scope('loss'):
     if is_binned_label:
@@ -406,10 +440,10 @@ def main(_):
         #print('step ', i)
         if is_binned_label :
           train_loss = accuracy.eval(feed_dict={x: batch_x, y_: batch_y})
-          print('step %d, accuracy %g' % (i, train_loss))
+          print('epoch %d step %d, accuracy %g' % (h5data.epoch, i, train_loss))
         else:
           train_loss = lossfn.eval(feed_dict={x: batch_x, y_: batch_y})
-          print('step %d, training loss %g' % (i, train_loss))
+          print('epoch %d step %d, training loss %g' % (h5data.epoch, i, train_loss))
 
       if i % save_iter == 0:
         save_path = saver.save(sess, graph_location + "/"+"model"+str(i)+".ckpt")
@@ -465,5 +499,8 @@ if __name__ == '__main__':
   parser.add_argument('--info_iter', type=int,
                       default=1000,
                       help='info_iter')
+  parser.add_argument('--model_name', type=str,
+                      default='model40',
+                      help='model_name')
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
