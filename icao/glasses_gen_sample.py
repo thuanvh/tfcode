@@ -42,8 +42,8 @@ glassestinted_file_list = [
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-10.txt",
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/tinted-11.txt"]
 none_glassestinted_file_list = [
-  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted.txt",
-  "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted2.txt",
+  #"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted.txt",
+  #"D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted2.txt",
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted3.txt",
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted4.txt",
   "D:/sandbox/utility/tfcode/icao/data/glasses-tinted/non_tinted5.txt",
@@ -99,7 +99,7 @@ def gen_sample_list(line_list, sample_number, name, startIdx, endIdx):
     label = line[1]
 
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    rects = detector(gray, 1)
+    rects = detector(gray, 0)
     
     imgcx = src.shape[1] / 2
     imgcy = src.shape[0] / 2
@@ -121,7 +121,7 @@ def gen_sample_list(line_list, sample_number, name, startIdx, endIdx):
       pt2d = shape_to_np(pt2d)
       #print(pose)
       roi = src[one_rect.top():one_rect.bottom(), one_rect.left():one_rect.right()]
-      cv2.imwrite("tmp/images/" + line[2] + ".jpg", roi)
+      cv2.imwrite("tmp/images/glasses/" + line[2] + ".jpg", roi)
 
       for i in range(sample_number):  
         sample = TrainSample()
@@ -142,7 +142,7 @@ def gen_sample_list(line_list, sample_number, name, startIdx, endIdx):
           for i in range(k):
             sample.trans[idx_array[i]] = np.random.random_sample()
 
-        sample.alpha = 1.0 + 0.1 * np.random.random_sample() - 0.05
+        sample.alpha = 1.0 + 0.2 * np.random.random_sample() - 0.1
         sample.beta = 10 * np.random.random_sample()
         if i == 0 :
           sample.rot = 0.0 
@@ -153,11 +153,11 @@ def gen_sample_list(line_list, sample_number, name, startIdx, endIdx):
   return sample_list
 
 
-biwi_sample_file = "tmp/glasses_tinted.npz"
-if not os.path.exists(biwi_sample_file):
-  sample_number = 10
-  sample_list = gen_sample_list(line_list, sample_number)
-  np.savez(biwi_sample_file,sample_list=sample_list)
+# biwi_sample_file = "tmp/glasses_tinted.npz"
+# if not os.path.exists(biwi_sample_file):
+#   sample_number = 10
+#   sample_list = gen_sample_list(line_list, sample_number)
+#   np.savez(biwi_sample_file,sample_list=sample_list)
 
 # test_sample_file = "tmp/test_glassestinted.npz"
 # if not os.path.exists(test_sample_file):
@@ -165,13 +165,13 @@ if not os.path.exists(biwi_sample_file):
 #   np.savez(test_sample_file,sample_list=test_sample_list)
 
 class myThread(threading.Thread):
-    def __init__(self, threadID, name, input_list, startIdx, endIdx, sample_number, output_list):
+    def __init__(self, threadID, name, input_list, startIdx, endIdx, sample_number):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.startIdx = startIdx
         self.endIdx = endIdx
         self.name = name
-        self.output_list = output_list
+        self.output_list = list()
         self.input_list = input_list
         self.sample_number = sample_number
     def run(self):
@@ -181,6 +181,22 @@ class myThread(threading.Thread):
 
 thread_num = 8
 data_size=int(len(line_list)/thread_num)
+thread_list = list()
+sample_number = 10
 for tid in range(thread_num):
-    t = myThread(tid,"a"+str(tid), data_size * tid, data_size * (tid+1))
+    t = myThread(tid,"a"+str(tid), line_list, data_size * tid, data_size * (tid+1), sample_number)
+    thread_list.append(t)
     t.start()
+for i in thread_list:
+  t.join()
+sample_list = list()
+for t in thread_list:
+  for s in t.output_list:
+    sample_list.append(s)
+
+test_sample_file = "tmp/glassestinted.npz"
+#if not os.path.exists(test_sample_file):
+#   test_sample_list = gen_sample_list(test_line_list, 1)
+np.savez(test_sample_file,sample_list=sample_list)
+
+

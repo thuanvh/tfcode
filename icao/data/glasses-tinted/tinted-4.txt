@@ -1,7 +1,7 @@
 D:\sandbox\images\glasses\yalefaces\tinted\100040721_1_helen_train.jpg
 D:\sandbox\images\glasses\yalefaces\tinted\156474078_1_afw.jpg
 D:\sandbox\images\glasses\yalefaces\tinted\2359007872_1_helen_train.jpg
-D:\sandbox\images\glasses\yalefaces\tinted\2911244712_1_helen_train.jpg
+#D:\sandbox\images\glasses\yalefaces\tinted\2911244712_1_helen_train.jpg
 D:\sandbox\images\glasses\yalefaces\tinted\2919219678_1_helen_train.jpg
 D:\sandbox\images\glasses\yalefaces\tinted\image_0013_lfpw_train.png
 D:\sandbox\images\glasses\yalefaces\tinted\image_0014_lfpw_train.png

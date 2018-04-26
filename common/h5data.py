@@ -49,5 +49,24 @@ class H5DataList:
         batch_y = np.concatenate((batch_y,self.cur_label[start:end,self.y_slice]),axis=0)
       self.cur_idx = end
     return batch_x, batch_y
+  def get_all(self):
+    x = np.array([])
+    y = np.array([])
+    for h5file in self.file_list:
+      print("read " + h5file)
+      f = h5py.File(h5file,'r')
+      data = f.get('data')
+      x_data = np.array(data)
+      label = f.get('label')
+      y_data = np.array(label)
+      print(x_data.shape, y_data.shape)
+      if len(x) == 0:
+        x = x_data#[:,:]
+        y = y_data[:,self.y_slice]
+      else:
+        x = np.concatenate((x, x_data[:,:]), axis=0)
+        y = np.concatenate((y, y_data[:,self.y_slice]), axis=0)    
+      print(x.shape, y.shape)
+    return x,y
 
       

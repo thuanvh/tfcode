@@ -428,7 +428,7 @@ D:\sandbox\images\glasses\glasses\MohB_01698_m_23_i_nf_nc_hp_2014_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses\MohF_01699_m_27_i_fr_nc_hp_2016_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses\MohF_01700_m_25_o_fr_nc_no_2014_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses\MohF_01701_m_24_o_fr_nc_hp_2013_1_e0_nl_o.jpg
-D:\sandbox\images\glasses\glasses\MohF_01702_m_25_o_nf_nc_no_2014_1_e0_nl_o.jpg
+#D:\sandbox\images\glasses\glasses\MohF_01702_m_25_o_nf_nc_no_2014_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses\MohF_01705_m_24_i_fr_nc_hp_2013_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses\MohF_01707_m_24_i_nf_nc_sr_2013_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses\MohF_01708_m_25_o_nf_nc_hp_2014_1_e0_nl_o.jpg

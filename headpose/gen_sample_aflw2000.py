@@ -50,7 +50,9 @@ def read_mat(mat_path):
     pre_pose_params = mat['Pose_Para'][0]
     # Get [pitch, yaw, roll]
     pose_params = pre_pose_params[:3]
-    pt2d = mat['pt2d']
+    pt3d = mat['pt3d_68']
+    pt3d = np.transpose(pt3d)
+    pt2d = pt3d[:,0:2]
     return pose_params,pt2d
 
 def read_sample_list(datapath, bins):
@@ -66,7 +68,7 @@ def read_sample_list(datapath, bins):
     #print(len(file_list2))
 
     sample_list = []
-    sample_number = 6
+    sample_number = 10
     file_idx = 0
     for filepath in file_list:  
         #print(file_idx, len(file_list))
@@ -81,9 +83,9 @@ def read_sample_list(datapath, bins):
         #pt2d = get_pt2d_from_mat(mat_path)
         #pose = get_ypr_from_mat(mat_path) # We get the pose in radians
         pose, pt2d = read_mat(mat_path)
-        fname = os.path.basename(filepath)
-        lm_path = os.path.dirname(os.path.dirname(os.path.abspath(filepath))) + "/landmarks/" + os.path.basename(os.path.dirname(filepath)) + "/" + fname[:-4] + "_pts.mat"
-        pts_2d_lm = get_pts_2d_landmark_from_mat(lm_path)
+        #fname = os.path.basename(filepath)
+        #lm_path = os.path.dirname(os.path.dirname(os.path.abspath(filepath))) + "/landmarks/" + os.path.basename(os.path.dirname(filepath)) + "/" + fname[:-4] + "_pts.mat"
+        pts_2d_lm = pt2d #get_pts_2d_landmark_from_mat(lm_path)
         #print(pose)
         for i in range(0,3):
             pose[i] = pose[i] * 180 / np.pi
@@ -135,10 +137,10 @@ def read_sample_list(datapath, bins):
 bins = np.array(range(-99, 102, 3))
 print(bins, len(bins))
 
-sample_list_file = "sample_list_300wlplm.npz"
+sample_list_file = "aflw2000_sample_list.npz"
 if not os.path.exists(sample_list_file):
     #datapath = "/media/sf_D_DRIVE/sandbox/images/300W-LP/300W_LP"
-    datapath = "D:/sandbox/images/300W-LP/300W_LP"
+    datapath = "D:/sandbox/images/AFLW2000-3D/AFLW2000"
     print("Create samples", datapath)
     sample_list = read_sample_list(datapath, bins)
     np.savez(sample_list_file,sample_list=sample_list)

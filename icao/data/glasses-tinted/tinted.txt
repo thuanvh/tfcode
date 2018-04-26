@@ -1,7 +1,7 @@
 D:\sandbox\images\glasses\glasses_tinted\AbdH_00130_m_23_i_fr_nc_hp_2015_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses_tinted\AbdH_00131_m_23_i_nf_nc_no_2015_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses_tinted\AhmB_00308_m_29_o_nf_nc_hp_2016_1_e0_nl_o.jpg
-D:\sandbox\images\glasses\glasses_tinted\AhmS_00357_m_20_i_fr_nc_no_2015_1_e0_nl_o.jpg
+#D:\sandbox\images\glasses\glasses_tinted\AhmS_00357_m_20_i_fr_nc_no_2015_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses_tinted\AlyM_00521_f_18_o_nf_cr_no_2015_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses_tinted\AsmH_00554_f_27_o_nf_nc_hp_2015_1_e0_nl_o.jpg
 D:\sandbox\images\glasses\glasses_tinted\AsmH_00555_f_28_o_nf_nc_sr_2016_1_e0_nl_o.jpg

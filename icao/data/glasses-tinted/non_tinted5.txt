@@ -59,7 +59,7 @@ D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_067.png
 D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_070.png
 D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_081.png
 D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_083.png
-D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_085.png
+#D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_085.png
 D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_086.png
 D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_087.png
 D:\\sandbox\\images\\glasses\\02_Outdoor\outdoor_089.png

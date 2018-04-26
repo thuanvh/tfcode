@@ -61,6 +61,12 @@ def save_h5_file_combine(data_h5, label_h5, suffix, train_file_idx):
         h5_file['label'][i] = label_h5[i]
     h5_file.close()
 
+def write_sample(img, pts, name):
+  drawing = img.copy()
+  for pt in pts:
+    cv2.circle(drawing, (int(pt[0]),int(pt[1])), 3, (0,0,255), -1)
+  cv2.imwrite(name, drawing)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--size', type=int,
                     default=100,
@@ -140,14 +146,39 @@ def sample_gen(rangename,start_idx, end_idx):
         src = cv2.imread(sample.img_path)
 
         pt2d = sample.face_pts
-        box_w = sample.box[1] - sample.box[0]
-        box_h = sample.box[3] - sample.box[2]
-        dx = (box_h-box_w)/2
-        startx = max(int(sample.box[0]-dx),0)
-        endx = min(int(sample.box[1]+dx), src.shape[1]-1)
-        #img = src[startx:endx, sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
-        #img = src[sample.box[2]:sample.box[3], sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
-        img = src[sample.box[2]:sample.box[3], startx:endx]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+        if(pt2d.shape[0]==2):
+            pt2d = np.zeros((pt2d.shape[1],2))
+            for i in range(sample.face_pts.shape[1]):
+                pt2d[i][0] = sample.face_pts[0][i]
+                pt2d[i][1] = sample.face_pts[1][i]
+        #write_sample(src, pt2d, prefix +"_raw.jpg")
+
+        # box_w = sample.box[1] - sample.box[0]
+        # box_h = sample.box[3] - sample.box[2]
+        # dx = (box_h-box_w)/2
+        # startx = max(int(sample.box[0]-dx),0)
+        # endx = min(int(sample.box[1]+dx), src.shape[1]-1)
+        # #img = src[startx:endx, sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+        # #img = src[sample.box[2]:sample.box[3], sample.box[0]:sample.box[1]]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+        # img = src[sample.box[2]:sample.box[3], startx:endx]#(int(x_min), int(y_min), int(x_max), int(y_max)))
+
+        eye_leftx, eye_lefty = np.mean(pt2d[36:42], axis=0)
+        eye_rightx, eye_righty = np.mean(pt2d[42:48], axis=0)
+        eye_cx = (eye_leftx + eye_rightx) * 0.5
+        eye_cy = (eye_lefty + eye_righty) * 0.5        
+        nose_cx, nose_cy = np.mean(pt2d[31:36], axis=0)
+        eye_nose_y = nose_cy - eye_cy
+        box_h = eye_nose_y * 3
+        box_w = box_h
+        box_cx = eye_cx
+        box_cy = (eye_cy * 0.3 + nose_cy * 0.7)
+        starty = int(box_cy - box_h/2)
+        endy = int(box_cy + box_h/2)+1
+        startx = int(box_cx - box_w/2)
+        endx = int(box_cx + box_w/2)+1
+        if(startx < 0 or endx > src.shape[1] or startx >= endx or starty < 0 or endy > src.shape[0] or starty >= endy):
+            continue
+        img = src[starty:endy,startx:endx]
         
         if sample.flip:
             #print(sample.pitch, sample.yaw, sample.roll, sample.pitch_bin, sample.yaw_bin, sample.roll_bin)
@@ -169,9 +200,10 @@ def sample_gen(rangename,start_idx, end_idx):
                 
 
         img = cv2.resize(img, (width, height)).astype(np.float32)
+        #cv2.imwrite(prefix + "_norm.jpg",img)
         img *= 2/255.0
         img -= 1
-        #cv2.imwrite(prefix + "_norm.jpg",img)
+        
         sample.yaw *= 1/180.0
         sample.pitch *= 1/180.0
         sample.roll *= 1/180.0
