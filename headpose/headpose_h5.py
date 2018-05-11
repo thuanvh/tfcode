@@ -12,6 +12,10 @@ import sys
 import threading
 import argparse
 
+import sys,os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/common')
+import imgutil
+
 from data_sample import TrainSample
 
 def create_h5_file(folder,train_file_idx, sample_per_file, sample_shape, label_len):
@@ -74,7 +78,7 @@ parser.add_argument('--size', type=int,
 parser.add_argument('--combineall', type=int,
                     default=1,
                     help='Output all label in one file')
-parser.add_argument('--sample_file', type=str,
+parser.add_argument('--sample_file', nargs='+', type=str,
                     default="sample_list.npz",
                     help='sample list file')
 parser.add_argument('--thread', type=int,
@@ -88,11 +92,18 @@ bins = np.array(range(-99, 102, 3))
 print(bins, len(bins))
 
 sample_list_file = FLAGS.sample_file #"sample_list.npz"
+print(sample_list_file)
+
 sample_list=[]
-print("Load samples ", sample_list_file)
-data = np.load(sample_list_file)    
-sample_list = data["sample_list"]
+for sample_file in sample_list_file:
+    data = np.load(sample_file)    
+    sample_list.extend(data["sample_list"])
+    print("Load samples ", sample_file, " size ", len(data["sample_list"]), " total ", len(sample_list))
+
 np.random.shuffle(sample_list)
+
+#exit(0)
+
 #for s in sample_list:
 #    print(s.yaw, s.pitch, s.roll)
 #print(train_data)
@@ -104,7 +115,10 @@ print("Sample list size: ", len(sample_list))
 inputsize =  FLAGS.size #40
 height = inputsize #100
 width = inputsize #100
-base_name = os.path.basename(sample_list_file)[:-4]
+if len(sample_list_file) == 1 :
+    base_name = os.path.basename(sample_list_file[0])[:-4]
+else:
+    base_name = "allsample"
 output_folder = "D:/sandbox/vmakeup/src/learncnn/model_face/model29_headpose/_data/headpose_" + str(inputsize) + "_" + str(base_name) + "/"
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
@@ -143,7 +157,16 @@ def sample_gen(rangename,start_idx, end_idx):
         sample = sample_list[cur_idx]
         prefix = output_folder+"images/"+str(file_idx)
         print_status(rangename, cur_idx)
-        src = cv2.imread(sample.img_path)
+        if (os.path.basename(sample.img_path)[-4:] == '.png'):
+            src4 = cv2.imread(sample.img_path, -1)
+            #print(src4.shape)
+            if src4.shape[2] == 4:
+                #print("blending", sample.bgcolor)
+                src = imgutil.blend_alpha(src4, (sample.bgcolor[0], sample.bgcolor[1], sample.bgcolor[2]))
+            else:
+                src = src4
+        else:
+            src = cv2.imread(sample.img_path)
 
         pt2d = sample.face_pts
         if(pt2d.shape[0]==2):

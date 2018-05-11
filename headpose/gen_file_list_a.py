@@ -21,7 +21,7 @@ import numpy as np
 #         if f.endswith(".jpg") and (("_fa" in f) or ("_fb" in f)):
 #             print(dirpath + "/" + f)
 
-datapath = "D:/sandbox/utility/tfcode/headpose/data/6/label"
+datapath = "D:/sandbox/utility/tfcode/headpose/data/8/label"
 for(dirpath, dirnames, filenames) in walk(datapath):
     for f in filenames:
         if f.endswith(".txt"):
@@ -32,7 +32,7 @@ for(dirpath, dirnames, filenames) in walk(datapath):
             roll = pose[2]
             pitch = pitch - int(pitch)
             yaw = yaw - int(yaw)
-            datapath_output = "D:/sandbox/utility/tfcode/headpose/data/6/label/"
+            datapath_output = "D:/sandbox/utility/tfcode/headpose/data/8/label/"
             fout = open(datapath_output + "/" + f, "w")
             fout.write("%f %f %f" % (yaw, pitch, roll))
             fout.close()

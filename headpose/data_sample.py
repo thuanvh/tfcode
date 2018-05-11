@@ -15,6 +15,7 @@ class TrainSample:
   alpha = 1.0
   beta = 0
   box=[]#xmin,xmax,ymin,ymax
+  bgcolor=[255,255,255]
 
 def shape_to_np(shape, dtype="int"):
 	# initialize the list of (x, y)-coordinates
